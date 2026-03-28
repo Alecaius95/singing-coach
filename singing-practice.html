@@ -78,7 +78,13 @@
 
         /* TIMER */
         .timer-display { font-size: 28px; font-weight: 700; font-family: monospace; color: var(--accent-light); text-align: center; padding: 6px 0; transition: color 0.4s; }
-        .timer-display.timer-done { color: var(--success); }
+        .timer-display.timer-done { color: var(--success); animation: timerPop 0.5s ease; }
+        @keyframes timerPop {
+            0%   { transform: scale(1); }
+            35%  { transform: scale(1.18); }
+            65%  { transform: scale(0.96); }
+            100% { transform: scale(1); }
+        }
         .timer-controls { display: flex; gap: 8px; justify-content: center; margin-top: 6px; }
 
         /* FORMS */
@@ -115,8 +121,8 @@
         .stat-box { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; text-align: center; flex: 1; }
         .stat-value { font-size: 24px; font-weight: 700; color: var(--accent-light); }
         .stat-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-        .session-exercise { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; }
-        .session-exercise.done { border-color: var(--success); opacity: 0.7; }
+        .session-exercise { display: flex; align-items: center; gap: 8px; padding: 5px 10px; background: var(--card); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 3px; }
+        .session-exercise.done { border-color: var(--success); opacity: 0.6; }
         .checkbox { width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--border); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
         .checkbox.checked { background: var(--success); border-color: var(--success); }
         .checkbox.checked::after { content: "✓"; color: white; font-size: 13px; font-weight: 700; }
@@ -183,6 +189,7 @@
         .suggestion-ex-wrap { background:var(--bg); border:1px solid var(--border); border-radius:8px; margin-bottom:5px; overflow:hidden; transition: opacity 0.15s; }
         .suggestion-ex-wrap.next-up { border-left:3px solid var(--accent-light); }
         .suggestion-ex-wrap.ex-done-today { border-color:var(--success); opacity:0.6; }
+        .suggestion-ex-wrap.ex-just-done { border-color:var(--success); }
         .suggestion-ex-wrap.dimmed { opacity:0.38; }
         .suggestion-ex-wrap.dimmed .suggestion-ex-row:hover { background: none; }
         .suggestion-ex-row { display:flex; align-items:center; gap:10px; padding:8px 12px; cursor:pointer; }
@@ -193,7 +200,7 @@
         .suggestion-ex-expand { font-size:10px; color:var(--text-muted); }
         .suggestion-ex-detail { border-top:1px solid var(--border); padding:14px 12px 10px; }
         .next-badge { font-size:11px; font-weight:400; color:var(--accent-light); white-space:nowrap; }
-        .quick-note-wrap { border-top:1px solid var(--border); padding:8px 12px 10px; }
+        .quick-note-wrap { border-top:1px solid var(--success); padding:10px 12px 12px; background:rgba(72,199,142,0.06); }
         .quick-note-input { width:100%; background:transparent; border:none; border-bottom:1px solid var(--border); border-radius:0; padding:4px 0; font-size:12px; color:var(--text); outline:none; resize:none; font-family:inherit; line-height:1.5; }
         .quick-note-input::placeholder { color:var(--text-muted); }
         .quick-note-input:focus { border-bottom-color:var(--accent-light); }
@@ -740,22 +747,32 @@ function getAllExercises() {
 // ==========================================
 
 const activeTimers = {};
+let sharedAudioCtx = null;
+function ensureAudioCtx() {
+    if (!sharedAudioCtx) sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (sharedAudioCtx.state === 'suspended') sharedAudioCtx.resume();
+    return sharedAudioCtx;
+}
 function playCompletionSound() {
     try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain); gain.connect(ctx.destination);
-        osc.frequency.setValueAtTime(523, ctx.currentTime);
-        osc.frequency.setValueAtTime(659, ctx.currentTime + 0.15);
-        osc.frequency.setValueAtTime(784, ctx.currentTime + 0.3);
-        gain.gain.setValueAtTime(0.25, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.9);
-        osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.9);
+        const ctx = ensureAudioCtx();
+        const doPlay = () => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.frequency.setValueAtTime(523, ctx.currentTime);
+            osc.frequency.setValueAtTime(659, ctx.currentTime + 0.15);
+            osc.frequency.setValueAtTime(784, ctx.currentTime + 0.3);
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.9);
+            osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.9);
+        };
+        ctx.state === 'suspended' ? ctx.resume().then(doPlay) : doPlay();
     } catch(e) {}
 }
 
 function startTimer(id) {
+    ensureAudioCtx();
     if (activeTimers[id] && activeTimers[id].interval) return;
     if (!activeTimers[id]) {
         const ex = getAllExercises().find(e => e.id === id);
@@ -1063,7 +1080,7 @@ function getSuggestedSession() {
     // ── Focus block (12–16 min) ──────────────────────────────────
     // Cycle exercises, excluding warm-ups, prioritising not-recently-done
     const cycleExIds = currentCycle.exercises.filter(id => !warmup.includes(id));
-    // Sort: not recently done and not done today first
+    // Sort for selection priority: fresh first, then recent, then done today
     const sorted = [
         ...cycleExIds.filter(id => !recentDone.has(id) && !todayDone.has(id)),
         ...cycleExIds.filter(id => recentDone.has(id) && !todayDone.has(id)),
@@ -1079,6 +1096,8 @@ function getSuggestedSession() {
         if (focusMins + dur <= 16) { focus.push(id); focusMins += dur; }
         if (focusMins >= 12) break;
     }
+    // Restore original cycle order so marking done doesn't move exercises around
+    focus.sort((a, b) => cycleExIds.indexOf(a) - cycleExIds.indexOf(b));
 
     const songTip = SONG_TIPS_IT[currentCycle.week] || "Applica il focus di oggi a una frase breve di una canzone che stai studiando.";
 
@@ -1145,7 +1164,7 @@ function renderSuggestedSession() {
                     <div class="detail-label">Timer</div>
                     <div class="timer-display" id="stimer-${ex.id}">0:00</div>
                     <div class="timer-controls">
-                        <button class="btn sm" id="sbtn-start-${ex.id}" onclick="startSuggestedTimer('${ex.id}')">${t('startTimer')}</button>
+                        <button class="btn sm" id="sbtn-start-${ex.id}" onclick="${activeTimers[ex.id]&&activeTimers[ex.id].interval?`pauseSuggestedTimer('${ex.id}')`:`startSuggestedTimer('${ex.id}')`}">${activeTimers[ex.id]?activeTimers[ex.id].interval?t('pause'):t('resume'):t('startTimer')}</button>
                         <button class="btn sm secondary" onclick="resetSuggestedTimer('${ex.id}')">${t('reset')}</button>
                     </div>
                 </div>
@@ -1159,7 +1178,8 @@ function renderSuggestedSession() {
             </div>`;
         }
 
-        const wrapClass = isDoneToday ? 'ex-done-today' : isNext ? 'next-up' : isExpanded ? '' : 'dimmed';
+        const showQuickNote = isDoneToday && pendingNoteId === id && !getNotes(id);
+        const wrapClass = isDoneToday ? (showQuickNote ? 'ex-just-done' : 'ex-done-today') : isNext ? 'next-up' : isExpanded ? '' : 'dimmed';
         return `<div class="suggestion-ex-wrap ${wrapClass}" data-sugg-id="${id}">
             <div class="suggestion-ex-row" onclick="toggleSuggested('${id}')">
                 <div class="suggestion-ex-name">${exT(ex,'name')}${isNext && !isDoneToday ? ` <span class="next-badge">[prossimo]</span>` : ''}</div>
@@ -1169,13 +1189,13 @@ function renderSuggestedSession() {
                 <button class="btn xs ${isDoneToday?'success':'secondary'}" onclick="event.stopPropagation(); markSuggestedDone('${id}')">${isDoneToday?'✓':'✓ Fatto'}</button>
             </div>
             ${detail}
-            ${isDoneToday && pendingNoteId === id ? `
+            ${showQuickNote ? `
             <div class="quick-note-wrap" onclick="event.stopPropagation()">
                 <textarea class="quick-note-input" id="quick-note-${id}" rows="1"
                     placeholder="Come è andata? (opzionale)"
                     onblur="saveQuickNote('${id}', this.value)"
                     onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.blur();}"
-                >${getNotes(id)}</textarea>
+                ></textarea>
             </div>` : ''}
         </div>`;
     }
@@ -1254,10 +1274,16 @@ function markSuggestedDone(id) {
     if (!session.done) session.done = [];
     if (session.done.includes(id)) {
         session.done = session.done.filter(x => x !== id);
+        session.exercises = session.exercises.filter(x => x !== id);
         pendingNoteId = null;
     } else {
         session.done.push(id);
         if (!session.exercises.includes(id)) session.exercises.push(id);
+        // Pause the timer if it's running
+        if (activeTimers[id] && activeTimers[id].interval) {
+            clearInterval(activeTimers[id].interval);
+            activeTimers[id].interval = null;
+        }
         expandedSuggested = null;
         pendingNoteId = id;
     }
@@ -1295,6 +1321,7 @@ function changeSuggestedStage(id, newIdx) {
 }
 
 function startSuggestedTimer(id) {
+    ensureAudioCtx();
     if (activeTimers[id] && activeTimers[id].interval) return;
     if (!activeTimers[id]) {
         const ex = getAllExercises().find(e => e.id === id);
@@ -1363,10 +1390,8 @@ function renderSession() {
             const cat = CATEGORIES.find(c=>c.id===ex.category);
             return `<div class="session-exercise ${isDone?'done':''}">
                 <div class="checkbox ${isDone?'checked':''}" onclick="toggleDone('${eid}')"></div>
-                <div style="flex:1; min-width:0;">
-                    <div style="font-size:13px; font-weight:500;">${ex.name}</div>
-                    <div style="font-size:11px; color:var(--text-muted);">${cat?cat.icon+' '+cat.name:''} · ${ex.duration||''}</div>
-                </div>
+                <div style="flex:1; min-width:0; font-size:12px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${ex.name}</div>
+                <span style="font-size:11px; color:var(--text-muted); white-space:nowrap; flex-shrink:0;">${cat?cat.icon:''} ${ex.duration||''}</span>
                 <button class="btn xs secondary" onclick="removeFromToday('${eid}')">✕</button>
             </div>`;
         }).join('');
