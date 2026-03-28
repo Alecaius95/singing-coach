@@ -137,13 +137,20 @@
         .plan-exercise-pill:hover { background: var(--accent); color: white; }
 
         /* TIPS */
-        .tips-cat-header { display: flex; align-items: center; gap: 8px; padding: 14px 0 8px; font-weight: 600; font-size: 14px; color: var(--accent-light); border-bottom: 1px solid var(--border); margin-bottom: 10px; }
-        .tip-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; margin-bottom: 7px; font-size: 13px; line-height: 1.6; display: flex; gap: 10px; align-items: flex-start; }
-        .tip-card.custom-tip { border-left: 3px solid var(--warning); }
-        .tip-bullet { color: var(--accent-light); font-size: 16px; flex-shrink: 0; margin-top: 1px; }
-        .tip-text { flex: 1; }
-        .tip-actions { display: flex; gap: 4px; flex-shrink: 0; opacity: 0; transition: opacity 0.15s; }
-        .tip-card:hover .tip-actions { opacity: 1; }
+        .tips-cat-grid { display: flex; flex-direction: column; gap: 8px; }
+        .tip-cat-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; cursor: pointer; transition: border-color 0.15s; }
+        .tip-cat-card.expanded { border-color: var(--accent); }
+        .tip-cat-card:not(.expanded):hover { border-color: var(--accent-light); }
+        .tip-cat-header { display: flex; align-items: center; gap: 12px; padding: 13px 16px; user-select: none; }
+        .tip-cat-icon { font-size: 22px; }
+        .tip-cat-name { flex: 1; font-size: 14px; font-weight: 600; }
+        .tip-cat-count { font-size: 11px; color: var(--text-muted); background: var(--border); padding: 2px 8px; border-radius: 99px; white-space: nowrap; }
+        .tip-cat-chevron { font-size: 10px; color: var(--text-muted); margin-left: 4px; transition: transform 0.2s; }
+        .tip-cat-card.expanded .tip-cat-chevron { transform: rotate(180deg); }
+        .tip-cat-body { border-top: 1px solid var(--border); padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 10px; }
+        .tip-bullet-item { font-size: 13px; line-height: 1.65; display: flex; gap: 10px; align-items: flex-start; }
+        .tip-bullet-marker { color: var(--accent-light); flex-shrink: 0; font-size: 15px; margin-top: 1px; }
+        .tip-custom-badge { font-size: 10px; background: var(--warning); color: #000; padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; flex-shrink: 0; }
 
         /* PROGRESS */
         .streak-bar { display: flex; gap: 4px; margin: 10px 0 22px; }
@@ -172,9 +179,11 @@
         .suggestion-block-icon { font-size:15px; }
         .suggestion-block-title { font-weight:600; font-size:13px; flex:1; }
         .suggestion-block-time { font-size:11px; color:var(--text-muted); background:var(--border); padding:2px 8px; border-radius:99px; }
-        .suggestion-ex-wrap { background:var(--bg); border:1px solid var(--border); border-radius:8px; margin-bottom:5px; overflow:hidden; }
-        .suggestion-ex-wrap.fresh { border-color:var(--accent); border-left-width:3px; }
-        .suggestion-ex-wrap.ex-done-today { border-color:var(--success); }
+        .suggestion-ex-wrap { background:var(--bg); border:1px solid var(--border); border-radius:8px; margin-bottom:5px; overflow:hidden; transition: opacity 0.15s; }
+        .suggestion-ex-wrap.next-up { border-left:3px solid var(--accent-light); }
+        .suggestion-ex-wrap.ex-done-today { border-color:var(--success); opacity:0.6; }
+        .suggestion-ex-wrap.dimmed { opacity:0.38; }
+        .suggestion-ex-wrap.dimmed .suggestion-ex-row:hover { background: none; }
         .suggestion-ex-row { display:flex; align-items:center; gap:10px; padding:8px 12px; cursor:pointer; }
         .suggestion-ex-row:hover { background:rgba(255,255,255,0.03); }
         .suggestion-ex-name { flex:1; font-size:13px; font-weight:500; }
@@ -182,10 +191,10 @@
         .suggestion-ex-done { font-size:10px; color:var(--text-muted); background:var(--border); padding:2px 7px; border-radius:99px; white-space:nowrap; }
         .suggestion-ex-expand { font-size:10px; color:var(--text-muted); }
         .suggestion-ex-detail { border-top:1px solid var(--border); padding:14px 12px 10px; }
-        .song-application-card { background:rgba(76,175,125,0.08); border:1px solid rgba(76,175,125,0.3); border-radius:10px; padding:12px 14px; }
-        .song-application-header { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
-        .song-application-title { font-weight:600; font-size:13px; }
-        .song-application-text { font-size:13px; line-height:1.65; color:var(--text); }
+        .next-badge { font-size:11px; font-weight:400; color:var(--accent-light); white-space:nowrap; }
+        /* done-exercises section */
+        .done-section { margin-top:20px; }
+        .done-section-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-muted); margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid var(--border); }
 
         /* MISC */
         .tag { display: inline-block; background: var(--border); border-radius: 4px; padding: 2px 7px; font-size: 11px; color: var(--text-muted); margin-right: 4px; margin-bottom: 4px; }
@@ -260,7 +269,6 @@
     </div>
     <h2>Quick Reference Tips</h2>
     <p style="color:var(--text-muted); font-size:13px; margin-bottom:14px; line-height:1.6;">Scan through these before or during practice to quickly re-align your perception and technique.</p>
-    <div class="filter-chips" id="tips-filter-chips"></div>
     <div id="tips-list"></div>
 </div>
 
@@ -1057,12 +1065,11 @@ function renderSuggestedSession() {
     const cycleLabel = `Ciclo ${s.cycle.week}`;
     const cycleTitle = planT(s.cycle, 'title');
 
-    function exRow(id) {
+    function exRow(id, isNext) {
         const ex = all.find(e => e.id === id);
         if (!ex) return '';
         const isDoneToday = s.todayDone.has(id);
         const doneRecently = s.recentDone.has(id) && !isDoneToday;
-        const isFresh = !s.recentDone.has(id) && !isDoneToday;
         const dur = parseDuration(ex.duration);
         const isExpanded = expandedSuggested === id;
         const badge = isDoneToday
@@ -1121,9 +1128,10 @@ function renderSuggestedSession() {
             </div>`;
         }
 
-        return `<div class="suggestion-ex-wrap ${isFresh&&!isDoneToday?'fresh':''} ${isDoneToday?'ex-done-today':''}" data-sugg-id="${id}">
+        const wrapClass = isDoneToday ? 'ex-done-today' : isNext ? 'next-up' : isExpanded ? '' : 'dimmed';
+        return `<div class="suggestion-ex-wrap ${wrapClass}" data-sugg-id="${id}">
             <div class="suggestion-ex-row" onclick="toggleSuggested('${id}')">
-                <div class="suggestion-ex-name">${exT(ex,'name')}</div>
+                <div class="suggestion-ex-name">${exT(ex,'name')}${isNext && !isDoneToday ? ` <span class="next-badge">[prossimo]</span>` : ''}</div>
                 <span class="suggestion-ex-meta">${dur} min</span>
                 ${badge}
                 <span class="suggestion-ex-expand">${isExpanded?'▲':'▼'}</span>
@@ -1133,18 +1141,18 @@ function renderSuggestedSession() {
         </div>`;
     }
 
-    const warmupRows = s.warmup.map(id => exRow(id)).join('');
-    const focusRows = s.focus.map(id => exRow(id)).join('');
     const allIds = [...s.warmup, ...s.focus];
+    const nextId = allIds.find(id => !s.todayDone.has(id));
+    const warmupRows = s.warmup.map(id => exRow(id, id === nextId)).join('');
+    const focusRows = s.focus.map(id => exRow(id, id === nextId)).join('');
 
     const txt = {
-        suggested: 'Sessione suggerita',
+        suggested: 'Piano di oggi',
         warmup: 'Riscaldamento',
         focus: `Tecnica — ${cycleTitle}`,
         song: 'Applicazione alla canzone',
         songTime: '3–5 min',
         addAll: '✓ Fatto tutto',
-        fresh: 'Priorità — non fatto di recente',
     };
 
     container.innerHTML = `
@@ -1169,16 +1177,15 @@ function renderSuggestedSession() {
                 <span class="suggestion-block-title">${txt.focus}</span>
                 <span class="suggestion-block-time">~${s.focusMins} min</span>
             </div>
-            <p style="font-size:11px; color:var(--accent-light); margin-bottom:8px;">▌ ${txt.fresh}</p>
             ${focusRows}
         </div>
 
-        <div class="song-application-card">
-            <div class="song-application-header">
-                <span style="font-size:16px;">🎵</span>
-                <span class="song-application-title">${txt.song} <span style="font-weight:400; color:var(--text-muted);">(${txt.songTime})</span></span>
+        <div class="suggestion-block">
+            <div class="suggestion-block-header">
+                <span class="suggestion-block-icon">🎵</span>
+                <span class="suggestion-block-title">${txt.song} <span style="font-weight:400;color:var(--text-muted);">(${txt.songTime})</span></span>
             </div>
-            <div class="song-application-text">${s.songTip}</div>
+            <p style="font-size:13px; line-height:1.65; color:var(--text-muted); margin:0; padding:0 4px;">${s.songTip}</p>
         </div>
 
         <div style="margin-top:12px;">
@@ -1391,21 +1398,15 @@ function jumpToExercise(id) {
 //  TIPS PAGE
 // ==========================================
 
-let activeTipsFilter = null;
+let expandedTipsCategory = null;
 
 const IT_CAT_NAMES = {warmup:'Riscaldamento',breathing:'Respirazione',support:'Sostegno e Appoggio',chest:'Registro di Petto',head:'Voce di Testa',falsetto:'Falsetto',mixed:'Voce Mista',resonance:'Risonanza',articulation:'Articolazione'};
 function catName(cat) { return IT_CAT_NAMES[cat.id] || cat.name; }
 
-function renderTipsFilterChips() {
-    const c = document.getElementById('tips-filter-chips');
-    let h = `<div class="chip ${activeTipsFilter===null?'active':''}" onclick="setTipsFilter(null)">Tutti</div>`;
-    CATEGORIES.forEach(cat => {
-        const count = [...builtinTips(), ...getCustomTips()].filter(tp=>tp.cat===cat.id).length;
-        if (count > 0) h += `<div class="chip ${activeTipsFilter===cat.id?'active':''}" onclick="setTipsFilter('${cat.id}')">${cat.icon} ${catName(cat)}</div>`;
-    });
-    c.innerHTML = h;
+function toggleTipsCategory(id) {
+    expandedTipsCategory = expandedTipsCategory === id ? null : id;
+    renderTips();
 }
-function setTipsFilter(id) { activeTipsFilter = id; renderTipsFilterChips(); renderTips(); }
 
 function renderTips() {
     // Update page headings
@@ -1423,32 +1424,39 @@ function renderTips() {
     const allBuiltin = builtinTips();
     const allTips = [...allBuiltin.map((tp,i)=>({...tp,id:'built-'+i,custom:false})),
                      ...customTips.map(tp=>({...tp,custom:true}))];
-    const filtered = activeTipsFilter ? allTips.filter(tp=>tp.cat===activeTipsFilter) : allTips;
-    if (filtered.length === 0) { container.innerHTML = `<div class="empty-state"><div class="empty-icon">💡</div>Nessun consiglio in questa categoria.</div>`; return; }
 
-    let html = '';
-    const cats = activeTipsFilter ? [CATEGORIES.find(c=>c.id===activeTipsFilter)].filter(Boolean) : CATEGORIES;
     const catNamesIT = {warmup:'Riscaldamento',breathing:'Respirazione',support:'Sostegno e Appoggio',chest:'Registro di Petto',head:'Voce di Testa',falsetto:'Falsetto',mixed:'Voce Mista / Passaggio',resonance:'Risonanza e Posizionamento',articulation:'Articolazione e Dizione'};
-    cats.forEach(cat => {
-        const tips = filtered.filter(tp=>tp.cat===cat.id);
+
+    let html = '<div class="tips-cat-grid">';
+    CATEGORIES.forEach(cat => {
+        const tips = allTips.filter(tp => tp.cat === cat.id);
         if (tips.length === 0) return;
         const cName = catNamesIT[cat.id] || cat.name;
-        html += `<div class="tips-cat-header"><span>${cat.icon}</span><span>${cName}</span></div>`;
-        tips.forEach(tip => {
-            html += `<div class="tip-card ${tip.custom?'custom-tip':''}">
-                <span class="tip-bullet">${tip.custom?'★':'›'}</span>
-                <span class="tip-text">${tip.text}</span>
-                ${tip.custom ? `<div class="tip-actions"><button class="btn xs secondary" onclick="deleteCustomTip('${tip.id}')">✕</button></div>` : ''}
-            </div>`;
-        });
+        const isExpanded = expandedTipsCategory === cat.id;
+        const bulletItems = tips.map(tip =>
+            `<div class="tip-bullet-item">
+                <span class="tip-bullet-marker">${tip.custom ? '★' : '›'}</span>
+                <span style="flex:1;">${tip.text}</span>
+                ${tip.custom ? `<button class="btn xs secondary" style="flex-shrink:0;" onclick="event.stopPropagation(); deleteCustomTip('${tip.id}')">✕</button>` : ''}
+            </div>`
+        ).join('');
+        html += `<div class="tip-cat-card${isExpanded?' expanded':''}" onclick="toggleTipsCategory('${cat.id}')">
+            <div class="tip-cat-header">
+                <span class="tip-cat-icon">${cat.icon}</span>
+                <span class="tip-cat-name">${cName}</span>
+                <span class="tip-cat-count">${tips.length}</span>
+                <span class="tip-cat-chevron">▼</span>
+            </div>
+            ${isExpanded ? `<div class="tip-cat-body" onclick="event.stopPropagation()">${bulletItems}</div>` : ''}
+        </div>`;
     });
-    container.innerHTML = html || `<div class="empty-state"><div class="empty-icon">💡</div>Nessun consiglio trovato.</div>`;
+    html += '</div>';
+    container.innerHTML = html;
 }
 
 function deleteCustomTip(id) {
     const tips = getCustomTips().filter(t=>t.id!==id);
     saveCustomTips(tips);
-    renderTipsFilterChips();
     renderTips();
 }
 
@@ -1665,7 +1673,7 @@ function saveCustomTip() {
     const tip = { id:'ctip-'+Date.now(), cat: document.getElementById('new-tip-cat').value, text, custom:true };
     const all = getCustomTips(); all.push(tip); saveCustomTips(all);
     closeModal('add-tip');
-    renderTipsFilterChips(); renderTips();
+    renderTips();
 }
 
 // ==========================================
@@ -1684,7 +1692,7 @@ function showPage(name) {
     if (name==='exercises') { renderFilterChips(); renderExercises(); }
     if (name==='session') renderSession();
     if (name==='plan') renderPlan();
-    if (name==='tips') { renderTipsFilterChips(); renderTips(); }
+    if (name==='tips') { renderTips(); }
     if (name==='progress') renderProgress();
 }
 
@@ -1707,7 +1715,7 @@ const T = {
     weekGoal:'Obiettivo:', markWeekDone:'✓ Segna il ciclo come completato', unmarkWeek:'↩ Rimuovi il segno',
     quickRef:'Consigli Rapidi di Riferimento', scanTips:'Scorri questi prima o durante la pratica per riallineare rapidamente la tua percezione e tecnica.',
     yourProgress:'I Tuoi Progressi', last7:'Ultimi 7 giorni', sessionHistory:'Storico sessioni',
-    todaySession:'Sessione di oggi', quickAdd:'Aggiungi velocemente un esercizio',
+    todaySession:'Esercizi fatti', quickAdd:'Aggiungi un esercizio',
     doneToday:'Fatti oggi', streak:'Streak 🔥', sessions:'Sessioni',
     progPlan:'Piano di Allenamento Progressivo', weekGoalLabel:'Obiettivo del ciclo:',
     noExFound:'Nessun esercizio trovato.\nProva un termine di ricerca o filtro diverso.',
