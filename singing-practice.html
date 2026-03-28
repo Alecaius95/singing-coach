@@ -1,0 +1,1865 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎤 Singing Practice</title>
+    <style>
+        :root {
+            --bg: #0f0f13;
+            --card: #1a1a23;
+            --border: #2a2a38;
+            --accent: #7c5cbf;
+            --accent-light: #a07ee0;
+            --text: #e8e8f0;
+            --text-muted: #888899;
+            --success: #4caf7d;
+            --warning: #f0a050;
+            --danger: #e05555;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+        /* NAV */
+        nav { background: var(--card); border-bottom: 1px solid var(--border); padding: 0 12px; display: flex; align-items: center; gap: 4px; height: 54px; position: sticky; top: 0; z-index: 100; overflow-x: auto; }
+        .nav-logo { font-size: 18px; font-weight: 700; color: var(--accent-light); margin-right: 8px; white-space: nowrap; }
+        .nav-tab { background: none; border: none; color: var(--text-muted); padding: 7px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.15s; white-space: nowrap; }
+        .nav-tab:hover { background: var(--border); color: var(--text); }
+        .nav-tab.active { background: var(--accent); color: white; }
+
+        /* PAGES */
+        .page { display: none; padding: 20px 14px; max-width: 800px; margin: 0 auto; }
+        .page.active { display: block; }
+
+        /* EXERCISE LIST */
+        .category-header { display: flex; align-items: center; gap: 10px; padding: 16px 0 8px; font-weight: 600; font-size: 14px; color: var(--accent-light); border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+        .category-count { font-size: 11px; background: var(--border); padding: 2px 7px; border-radius: 99px; color: var(--text-muted); margin-left: auto; }
+        .exercise-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; cursor: pointer; transition: background 0.1s; margin-bottom: 3px; border: 1px solid transparent; }
+        .exercise-item:hover { background: var(--border); }
+        .exercise-item.expanded { background: var(--border); border-color: var(--accent); }
+        .exercise-item.custom-ex { border-left: 3px solid var(--warning); }
+        .exercise-difficulty { display: flex; gap: 3px; }
+        .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border); }
+        .dot.filled { background: var(--accent-light); }
+        .exercise-title { flex: 1; font-size: 13px; font-weight: 500; }
+        .exercise-meta { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+        .exercise-detail { display: none; padding: 14px 12px 10px; border-top: 1px solid var(--border); margin-top: 2px; }
+        .exercise-detail.open { display: block; }
+        .detail-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 5px; }
+        .detail-text { font-size: 13px; line-height: 1.65; color: var(--text); }
+        .detail-section { margin-bottom: 12px; }
+        .tip-box { background: rgba(124,92,191,0.12); border-left: 3px solid var(--accent); padding: 10px 14px; border-radius: 0 6px 6px 0; font-size: 13px; line-height: 1.6; }
+        .yt-link { display: inline-flex; align-items: center; gap: 5px; color: #ff4444; font-size: 12px; font-weight: 500; text-decoration: none; background: rgba(255,68,68,0.1); border: 1px solid rgba(255,68,68,0.25); border-radius: 6px; padding: 4px 10px; transition: background 0.15s; }
+        .yt-link:hover { background: rgba(255,68,68,0.2); }
+
+        /* STAGE WIDGET */
+        .stage-widget { background: rgba(240,160,80,0.1); border: 1px solid rgba(240,160,80,0.3); border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; }
+        .stage-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .stage-badge { background: var(--warning); color: #111; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 99px; }
+        .stage-name { font-weight: 600; font-size: 13px; }
+        .stage-desc { font-size: 13px; line-height: 1.6; margin-bottom: 10px; }
+        .stage-controls { display: flex; gap: 8px; align-items: center; }
+        .stage-progress { font-size: 12px; color: var(--text-muted); margin-left: auto; }
+
+        /* BUTTONS */
+        .btn { background: var(--accent); color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; transition: opacity 0.15s; }
+        .btn:hover { opacity: 0.85; }
+        .btn.secondary { background: var(--border); color: var(--text); }
+        .btn.success { background: var(--success); }
+        .btn.danger { background: var(--danger); }
+        .btn.warning { background: var(--warning); color: #111; }
+        .btn.sm { padding: 5px 10px; font-size: 12px; }
+        .btn.xs { padding: 3px 8px; font-size: 11px; }
+        .btn-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+        /* BADGES */
+        .done-badge { background: var(--success); color: white; font-size: 11px; padding: 2px 8px; border-radius: 99px; font-weight: 600; white-space: nowrap; }
+        .custom-badge { background: var(--warning); color: #111; font-size: 10px; padding: 2px 7px; border-radius: 99px; font-weight: 700; white-space: nowrap; }
+
+        /* TIMER */
+        .timer-display { font-size: 28px; font-weight: 700; font-family: monospace; color: var(--accent-light); text-align: center; padding: 6px 0; }
+        .timer-controls { display: flex; gap: 8px; justify-content: center; margin-top: 6px; }
+
+        /* FORMS */
+        .form-row { margin-bottom: 14px; }
+        .form-label { font-size: 12px; color: var(--text-muted); margin-bottom: 5px; display: block; }
+        .form-input, .form-select, .form-textarea {
+            width: 100%; background: var(--bg); border: 1px solid var(--border);
+            border-radius: 8px; color: var(--text); padding: 9px 12px;
+            font-size: 13px; font-family: inherit;
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--accent); }
+        .form-select option { background: var(--card); }
+        .form-textarea { resize: vertical; min-height: 70px; }
+        .notes-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 8px 12px; font-size: 13px; resize: vertical; min-height: 64px; font-family: inherit; }
+        .notes-input:focus { outline: none; border-color: var(--accent); }
+
+        /* MODAL */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 1000; align-items: flex-start; justify-content: center; padding: 20px 14px; overflow-y: auto; }
+        .modal-overlay.open { display: flex; }
+        .modal { background: var(--card); border: 1px solid var(--border); border-radius: 14px; width: 100%; max-width: 600px; padding: 20px; margin: auto; }
+        .modal-header { display: flex; align-items: center; margin-bottom: 20px; }
+        .modal-title { font-size: 16px; font-weight: 700; flex: 1; }
+        .modal-close { background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
+        .modal-close:hover { background: var(--border); }
+
+        /* STAGE EDITOR */
+        .stage-row { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; display: flex; gap: 8px; align-items: flex-start; }
+        .stage-row-body { flex: 1; }
+        .stage-row-num { background: var(--warning); color: #111; font-size: 11px; font-weight: 700; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+
+        /* SESSION */
+        .session-date { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+        .session-stats { display: flex; gap: 10px; margin-bottom: 22px; }
+        .stat-box { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; text-align: center; flex: 1; }
+        .stat-value { font-size: 24px; font-weight: 700; color: var(--accent-light); }
+        .stat-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+        .session-exercise { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; }
+        .session-exercise.done { border-color: var(--success); opacity: 0.7; }
+        .checkbox { width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--border); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
+        .checkbox.checked { background: var(--success); border-color: var(--success); }
+        .checkbox.checked::after { content: "✓"; color: white; font-size: 13px; font-weight: 700; }
+
+        /* PLAN */
+        .plan-week { background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+        .plan-week.current-cycle { border-color: var(--warning); box-shadow: 0 0 0 2px rgba(240,160,80,0.25); }
+        .plan-week-header { display: flex; align-items: center; gap: 10px; padding: 13px 14px; cursor: pointer; }
+        .plan-week-header:hover { background: rgba(255,255,255,0.03); }
+        .plan-week.current-cycle .plan-week-header { background: rgba(240,160,80,0.07); }
+        .week-badge { color: white; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 99px; white-space: nowrap; background: var(--accent); }
+        .week-badge.done { background: var(--success); }
+        .week-badge.current { background: var(--warning); color: #111; }
+        .week-title { font-weight: 600; flex: 1; font-size: 13px; }
+        .plan-week-body { display: none; padding: 0 14px 14px; border-top: 1px solid var(--border); background: rgba(255,255,255,0.025); }
+        .plan-week-body.open { display: block; }
+        .plan-week.current-cycle .plan-week-body { background: rgba(240,160,80,0.04); border-top-color: rgba(240,160,80,0.3); }
+        .plan-exercise-pill { display: inline-flex; align-items: center; gap: 5px; background: var(--border); border-radius: 99px; padding: 4px 11px; font-size: 12px; margin: 4px 4px 0 0; cursor: pointer; transition: background 0.1s; }
+        .plan-exercise-pill:hover { background: var(--accent); color: white; }
+
+        /* TIPS */
+        .tips-cat-header { display: flex; align-items: center; gap: 8px; padding: 14px 0 8px; font-weight: 600; font-size: 14px; color: var(--accent-light); border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+        .tip-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; margin-bottom: 7px; font-size: 13px; line-height: 1.6; display: flex; gap: 10px; align-items: flex-start; }
+        .tip-card.custom-tip { border-left: 3px solid var(--warning); }
+        .tip-bullet { color: var(--accent-light); font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+        .tip-text { flex: 1; }
+        .tip-actions { display: flex; gap: 4px; flex-shrink: 0; opacity: 0; transition: opacity 0.15s; }
+        .tip-card:hover .tip-actions { opacity: 1; }
+
+        /* PROGRESS */
+        .streak-bar { display: flex; gap: 4px; margin: 10px 0 22px; }
+        .streak-day { flex: 1; height: 44px; border-radius: 8px; background: var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: var(--text-muted); gap: 3px; }
+        .streak-day.practiced { background: var(--accent); color: white; }
+        .streak-day.today { border: 2px solid var(--accent-light); }
+        .history-entry { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; }
+        .history-date { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+        .history-pills { display: flex; flex-wrap: wrap; gap: 5px; }
+        .history-pill { background: var(--border); border-radius: 99px; padding: 3px 10px; font-size: 12px; }
+
+        /* SEARCH & FILTERS */
+        .search-bar { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 9px 14px; color: var(--text); width: 100%; font-size: 13px; margin-bottom: 12px; font-family: inherit; }
+        .search-bar:focus { outline: none; border-color: var(--accent); }
+        .filter-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+        .chip { background: var(--card); border: 1px solid var(--border); border-radius: 99px; padding: 4px 12px; font-size: 12px; cursor: pointer; transition: all 0.15s; color: var(--text-muted); white-space: nowrap; }
+        .chip:hover { border-color: var(--accent); color: var(--text); }
+        .chip.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+        /* SUGGESTION CARD */
+        .suggestion-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+        .suggestion-title { font-size:16px; font-weight:700; }
+        .suggestion-cycle-badge { background:var(--accent); color:white; font-size:11px; font-weight:700; padding:3px 11px; border-radius:99px; }
+        .suggestion-block { margin-bottom:14px; }
+        .suggestion-block-header { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+        .suggestion-block-icon { font-size:15px; }
+        .suggestion-block-title { font-weight:600; font-size:13px; flex:1; }
+        .suggestion-block-time { font-size:11px; color:var(--text-muted); background:var(--border); padding:2px 8px; border-radius:99px; }
+        .suggestion-ex-wrap { background:var(--bg); border:1px solid var(--border); border-radius:8px; margin-bottom:5px; overflow:hidden; }
+        .suggestion-ex-wrap.fresh { border-color:var(--accent); border-left-width:3px; }
+        .suggestion-ex-wrap.ex-done-today { border-color:var(--success); }
+        .suggestion-ex-row { display:flex; align-items:center; gap:10px; padding:8px 12px; cursor:pointer; }
+        .suggestion-ex-row:hover { background:rgba(255,255,255,0.03); }
+        .suggestion-ex-name { flex:1; font-size:13px; font-weight:500; }
+        .suggestion-ex-meta { font-size:11px; color:var(--text-muted); white-space:nowrap; }
+        .suggestion-ex-done { font-size:10px; color:var(--text-muted); background:var(--border); padding:2px 7px; border-radius:99px; white-space:nowrap; }
+        .suggestion-ex-expand { font-size:10px; color:var(--text-muted); }
+        .suggestion-ex-detail { border-top:1px solid var(--border); padding:14px 12px 10px; }
+        .song-application-card { background:rgba(76,175,125,0.08); border:1px solid rgba(76,175,125,0.3); border-radius:10px; padding:12px 14px; }
+        .song-application-header { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+        .song-application-title { font-weight:600; font-size:13px; }
+        .song-application-text { font-size:13px; line-height:1.65; color:var(--text); }
+
+        /* MISC */
+        .tag { display: inline-block; background: var(--border); border-radius: 4px; padding: 2px 7px; font-size: 11px; color: var(--text-muted); margin-right: 4px; margin-bottom: 4px; }
+        .section-divider { margin: 22px 0 16px; border-top: 1px solid var(--border); padding-top: 18px; }
+        .empty-state { text-align: center; color: var(--text-muted); padding: 36px 20px; font-size: 13px; line-height: 1.8; }
+        .empty-icon { font-size: 36px; margin-bottom: 10px; }
+        h2 { font-size: 17px; margin-bottom: 12px; }
+        h3 { font-size: 14px; margin-bottom: 10px; font-weight: 600; }
+        .page-actions { display: flex; gap: 8px; margin-bottom: 16px; justify-content: flex-end; }
+
+        @media (max-width: 600px) {
+            .nav-tab { padding: 6px 9px; font-size: 12px; }
+            .page { padding: 14px 10px; }
+            .session-stats { flex-wrap: wrap; }
+            .stat-box { min-width: calc(33% - 8px); }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <span class="nav-logo">🎤</span>
+    <button class="nav-tab" id="tab-exercises" onclick="showPage('exercises')">Esercizi</button>
+    <button class="nav-tab active" id="tab-session" onclick="showPage('session')">Oggi</button>
+    <button class="nav-tab" id="tab-plan" onclick="showPage('plan')">Piano</button>
+    <button class="nav-tab" id="tab-tips" onclick="showPage('tips')">Consigli</button>
+    <button class="nav-tab" id="tab-progress" onclick="showPage('progress')">Progressi</button>
+</nav>
+
+<!-- ===================== EXERCISES ===================== -->
+<div id="page-exercises" class="page">
+    <div class="page-actions">
+        <button class="btn sm warning" id="btn-add-exercise" onclick="openModal('add-exercise')">+ Add my exercise</button>
+    </div>
+    <input class="search-bar" id="exercise-search" placeholder="🔍 Search exercises, tags, categories..." oninput="filterExercises()" />
+    <div class="filter-chips" id="filter-chips"></div>
+    <div id="exercise-list"></div>
+</div>
+
+<!-- ===================== SESSION ===================== -->
+<div id="page-session" class="page active">
+    <div class="session-date" id="session-date"></div>
+    <p style="color:var(--text-muted); font-size:13px; margin-bottom:18px;" id="session-subtitle"></p>
+    <div class="session-stats">
+        <div class="stat-box"><div class="stat-value" id="stat-done">0</div><div class="stat-label">Done today</div></div>
+        <div class="stat-box"><div class="stat-value" id="stat-streak">0</div><div class="stat-label">Streak 🔥</div></div>
+        <div class="stat-box"><div class="stat-value" id="stat-total">0</div><div class="stat-label">Sessions</div></div>
+    </div>
+    <div id="suggested-session"></div>
+    <div class="section-divider" style="margin-top:0; padding-top:18px;">
+        <h3 id="h3-today-session">Today's session</h3>
+        <div id="today-list"></div>
+    </div>
+    <div class="section-divider">
+        <h3 id="h3-quick-add">Quick-add an exercise</h3>
+        <div id="quick-add-list" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
+    </div>
+</div>
+
+<!-- ===================== PLAN ===================== -->
+<div id="page-plan" class="page">
+    <h2>Progressive Training Plan</h2>
+    <p style="color:var(--text-muted); font-size:13px; margin-bottom:6px; line-height:1.6;">A 12-cycle structured plan building from foundations to full range integration. Mark a cycle complete when you feel comfortable with its goals — take as long as you need.</p>
+    <p style="color:var(--text-muted); font-size:12px; margin-bottom:18px;">💡 Tap any exercise pill to jump to it in the library.</p>
+    <div id="plan-weeks"></div>
+</div>
+
+<!-- ===================== TIPS ===================== -->
+<div id="page-tips" class="page">
+    <div class="page-actions">
+        <button class="btn sm warning" onclick="openModal('add-tip')">+ Add my tip</button>
+    </div>
+    <h2>Quick Reference Tips</h2>
+    <p style="color:var(--text-muted); font-size:13px; margin-bottom:14px; line-height:1.6;">Scan through these before or during practice to quickly re-align your perception and technique.</p>
+    <div class="filter-chips" id="tips-filter-chips"></div>
+    <div id="tips-list"></div>
+</div>
+
+<!-- ===================== PROGRESS ===================== -->
+<div id="page-progress" class="page">
+    <h2>Your Progress</h2>
+    <h3>Last 7 days</h3>
+    <div class="streak-bar" id="streak-bar"></div>
+    <h3>Session history</h3>
+    <div id="history-list"></div>
+</div>
+
+<!-- ===================== MODALS ===================== -->
+
+<!-- ADD EXERCISE MODAL -->
+<div class="modal-overlay" id="modal-add-exercise">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">➕ Add Custom Exercise</span>
+            <button class="modal-close" onclick="closeModal('add-exercise')">✕</button>
+        </div>
+        <div class="form-row">
+            <label class="form-label">Exercise name *</label>
+            <input class="form-input" id="new-ex-name" placeholder="e.g. My teacher's lip trill variation" />
+        </div>
+        <div class="form-row">
+            <label class="form-label">Category *</label>
+            <select class="form-select" id="new-ex-cat"></select>
+        </div>
+        <div class="form-row">
+            <label class="form-label">Difficulty</label>
+            <select class="form-select" id="new-ex-diff">
+                <option value="1">⬤○○ Beginner</option>
+                <option value="2">⬤⬤○ Intermediate</option>
+                <option value="3">⬤⬤⬤ Advanced</option>
+            </select>
+        </div>
+        <div class="form-row">
+            <label class="form-label">Duration / target time</label>
+            <input class="form-input" id="new-ex-duration" placeholder="e.g. 3 min, 30s each" />
+        </div>
+        <div class="form-row">
+            <label class="form-label">Description (how to do it) *</label>
+            <textarea class="form-textarea" id="new-ex-desc" placeholder="Describe the exercise step by step..."></textarea>
+        </div>
+        <div class="form-row">
+            <label class="form-label">Reps / target</label>
+            <input class="form-input" id="new-ex-reps" placeholder="e.g. 5 repetitions, hold 10s each" />
+        </div>
+        <div class="form-row">
+            <label class="form-label">Personal tip (what your teacher told you, what to pay attention to)</label>
+            <textarea class="form-textarea" id="new-ex-tip" placeholder="e.g. My teacher always says to keep the jaw relaxed..."></textarea>
+        </div>
+        <div class="form-row">
+            <label class="form-label">Tags (comma-separated)</label>
+            <input class="form-input" id="new-ex-tags" placeholder="e.g. breathing, warm-up, support" />
+        </div>
+        <div class="form-row">
+            <label class="form-label" style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" id="new-ex-has-stages" onchange="toggleStageEditor()" style="width:16px; height:16px;" />
+                This exercise has progressive stages (settings that change as I improve)
+            </label>
+        </div>
+        <div id="stage-editor" style="display:none;">
+            <div style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">Add each stage below — e.g. Stage 1 = Beginner settings, Stage 2 = Intermediate, etc.</div>
+            <div id="stage-rows"></div>
+            <button class="btn sm secondary" onclick="addStageRow()" style="margin-top:4px;">+ Add stage</button>
+        </div>
+        <div class="btn-row" style="margin-top:20px;">
+            <button class="btn" onclick="saveCustomExercise()">Save exercise</button>
+            <button class="btn secondary" onclick="closeModal('add-exercise')">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- EDIT EXERCISE MODAL -->
+<div class="modal-overlay" id="modal-edit-exercise">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">✏️ Edit Exercise</span>
+            <button class="modal-close" onclick="closeModal('edit-exercise')">✕</button>
+        </div>
+        <div class="form-row">
+            <label class="form-label">Exercise name</label>
+            <input class="form-input" id="edit-ex-name" />
+        </div>
+        <div class="form-row">
+            <label class="form-label">Category</label>
+            <select class="form-select" id="edit-ex-cat"></select>
+        </div>
+        <div class="form-row">
+            <label class="form-label">Difficulty</label>
+            <select class="form-select" id="edit-ex-diff">
+                <option value="1">⬤○○ Beginner</option>
+                <option value="2">⬤⬤○ Intermediate</option>
+                <option value="3">⬤⬤⬤ Advanced</option>
+            </select>
+        </div>
+        <div class="form-row">
+            <label class="form-label">Duration</label>
+            <input class="form-input" id="edit-ex-duration" />
+        </div>
+        <div class="form-row">
+            <label class="form-label">Description</label>
+            <textarea class="form-textarea" id="edit-ex-desc"></textarea>
+        </div>
+        <div class="form-row">
+            <label class="form-label">Reps / target</label>
+            <input class="form-input" id="edit-ex-reps" />
+        </div>
+        <div class="form-row">
+            <label class="form-label">Tip</label>
+            <textarea class="form-textarea" id="edit-ex-tip"></textarea>
+        </div>
+        <div class="form-row">
+            <label class="form-label">Tags (comma-separated)</label>
+            <input class="form-input" id="edit-ex-tags" />
+        </div>
+        <input type="hidden" id="edit-ex-id" />
+        <div class="btn-row" style="margin-top:20px;">
+            <button class="btn" onclick="saveEditedExercise()">Save changes</button>
+            <button class="btn danger" onclick="deleteCustomExercise()">Delete exercise</button>
+            <button class="btn secondary" onclick="closeModal('edit-exercise')">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- ADD TIP MODAL -->
+<div class="modal-overlay" id="modal-add-tip">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">➕ Add Custom Tip</span>
+            <button class="modal-close" onclick="closeModal('add-tip')">✕</button>
+        </div>
+        <div class="form-row">
+            <label class="form-label">Category</label>
+            <select class="form-select" id="new-tip-cat"></select>
+        </div>
+        <div class="form-row">
+            <label class="form-label">Tip text *</label>
+            <textarea class="form-textarea" id="new-tip-text" placeholder="Write your tip here — keep it short and actionable..."></textarea>
+        </div>
+        <div class="btn-row" style="margin-top:16px;">
+            <button class="btn" onclick="saveCustomTip()">Save tip</button>
+            <button class="btn secondary" onclick="closeModal('add-tip')">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==========================================
+//  DATA
+// ==========================================
+
+const CATEGORIES = [
+    { id: 'warmup',       name: 'Warm-ups',               icon: '🌅' },
+    { id: 'breathing',    name: 'Breathing',               icon: '💨' },
+    { id: 'support',      name: 'Support & Appoggio',      icon: '🏋️' },
+    { id: 'chest',        name: 'Chest Voice',             icon: '⬇️' },
+    { id: 'head',         name: 'Head Voice',              icon: '⬆️' },
+    { id: 'falsetto',     name: 'Falsetto',                icon: '🪶' },
+    { id: 'mixed',        name: 'Mixed Voice / Passaggio', icon: '🔀' },
+    { id: 'resonance',    name: 'Resonance & Placement',   icon: '📡' },
+    { id: 'articulation', name: 'Articulation & Diction',  icon: '👄' },
+];
+
+// stages: optional array of { label, desc, reps }
+const EXERCISES = [
+    // WARM-UPS
+    { id:'lip-trill', category:'warmup', name:'Lip Trills', duration:'3 min', difficulty:1,
+      desc:'Blow air gently through loosely closed lips, creating a buzzing/motorboat vibration. While sustaining the trill, slide up and down your range.',
+      tip:"If your lips tense up, lightly support the corners of your mouth with two fingers. Total relaxation — let the air do the work. One of the most effective SOVT exercises used even by professionals daily.",
+      reps:'5–8 full-range slides, each 5–8 seconds', tags:['sovt','relaxation','range','breath'] },
+    { id:'tongue-trill', category:'warmup', name:'Tongue Trills (Rolled R)', duration:'2 min', difficulty:2,
+      desc:'Roll your tongue (Italian/Spanish "rrr") while vocalizing across your range. Frees tension in the tongue and jaw.',
+      tip:"Can't roll your tongue? Use a fast \"dr-dr-dr\" pattern — nearly as effective. The moment you tense up, you've lost the point.",
+      reps:'5–8 slides', tags:['relaxation','range','articulation'] },
+    { id:'yawn-sigh', category:'warmup', name:'Yawn-Sigh', duration:'2 min', difficulty:1,
+      desc:'Take a deep yawn (feel the back of your throat open completely), then let out a relaxed, breathy sigh from the top of your range down to the bottom.',
+      tip:"Don't try to \"sing\" the sigh — just let it fall. The open space in the back of your throat during a yawn? That's what you want when you sing.",
+      reps:'6–10 sighs covering your full range', tags:['relaxation','range','throat space'] },
+    { id:'five-tone-me', category:'warmup', name:'Five-Tone Scale on "Me"', duration:'4 min', difficulty:1,
+      desc:'Sing a five-note scale (1-2-3-4-5-4-3-2-1) on the bright syllable "Me". Start in comfortable middle range and move up by half steps, then descend.',
+      tip:'"Me" promotes forward placement and engages twang — buzz between your eyes. Keep it light on the way up.',
+      reps:'Move through 8–10 keys', tags:['scale','placement','twang'] },
+    { id:'octave-repeat', category:'warmup', name:'Octave Repeat on "Nay"', duration:'4 min', difficulty:2,
+      desc:'Sing the 1-8-1 pattern on "Nay" (nasal and buzzy). Jump an octave up, then return. Move up by half steps.',
+      tip:'"Nay" activates twang and forward resonance. Reveals where your passaggio sits as you move higher.',
+      reps:'Move through 6–8 keys', tags:['twang','range','passaggio'] },
+
+    // BREATHING
+    { id:'belly-breath', category:'breathing', name:'Diaphragmatic Breathing', duration:'5 min', difficulty:1,
+      desc:'One hand on chest, one on belly. Breathe in through nose — only the belly hand rises. Chest stays still. Exhale slowly.',
+      tip:'This is the absolute foundation. If you can\'t isolate belly breathing lying down, you won\'t do it while singing. Practice daily until it\'s your automatic default.',
+      reps:'10–15 slow, conscious breaths', tags:['foundation','diaphragm','beginner'] },
+    { id:'box-breathing', category:'breathing', name:'Box Breathing', duration:'5 min', difficulty:2,
+      desc:'Breathe in a box pattern: inhale — hold — exhale — hold. Each phase is timed. This builds breath control, lung capacity, and the ability to manage air on long phrases.',
+      tip:'The magic is in the progressive nature: as you get better, the exhale gets longer while the inhale stays the same. This mirrors what happens in singing — short in, long out. Don\'t push the times; advance a stage only when the current one feels completely comfortable.',
+      reps:'6–8 cycles per session',
+      tags:['breathing','control','progressive','diaphragm'],
+      stages:[
+        { label:'Stage 1 — Equal Box', desc:'Inhale 4s · Hold 4s · Exhale 4s · Hold 4s', reps:'6 cycles — focus on keeping the belly expanded on the hold' },
+        { label:'Stage 2 — Extended Exhale', desc:'Inhale 4s · Hold 4s · Exhale 6s · Hold 2s', reps:'6 cycles — the exhale is longer: manage the air slowly' },
+        { label:'Stage 3 — Long Exhale', desc:'Inhale 4s · Hold 4s · Exhale 8s · Hold 2s', reps:'6 cycles — you should feel mild resistance keeping the breath controlled' },
+        { label:'Stage 4 — Singer\'s Control', desc:'Inhale 4s · Hold 4s · Exhale 10s · Hold 2s', reps:'6 cycles — this mirrors what you need for long melodic phrases' },
+        { label:'Stage 5 — Advanced', desc:'Inhale 4s · Hold 4s · Exhale 12s · Hold 2s', reps:'6 cycles — very controlled, no rushing the end of the exhale' },
+      ]
+    },
+    { id:'hissing', category:'breathing', name:'Sustained Hiss', duration:'3 min', difficulty:1,
+      desc:'Full diaphragmatic breath. Exhale very slowly on a sustained "ssssss", maintaining perfectly even air pressure. Measure time and extend each round.',
+      tip:'Feel your belly slowly deflating — not collapsing. The slight outward resistance is the beginning of breath support.',
+      reps:'5–8 hisses — note your time each round',
+      tags:['airflow','control','support'],
+      stages:[
+        { label:'Stage 1 — Foundation', desc:'Target: 15 seconds per hiss', reps:'5 hisses — focus on evenness of the airstream' },
+        { label:'Stage 2 — Developing', desc:'Target: 20 seconds per hiss', reps:'6 hisses — feel the belly resisting collapse' },
+        { label:'Stage 3 — Intermediate', desc:'Target: 25–30 seconds per hiss', reps:'6 hisses — full support awareness' },
+        { label:'Stage 4 — Advanced', desc:'Target: 35–45 seconds per hiss', reps:'6 hisses — this is professional-level breath control' },
+      ]
+    },
+    { id:'panting', category:'breathing', name:'Dog Panting (Diaphragm)', duration:'1 min', difficulty:1,
+      desc:'Open mouth, pant quickly like a dog — short rapid inhales and exhales. Feel the bouncing in your belly.',
+      tip:'This quickly locates your diaphragm. Remember the bouncing sensation — that\'s the muscle you\'ll use for support.',
+      reps:'3 rounds of 15 seconds', tags:['diaphragm','activation','awareness'] },
+    { id:'breath-suspension', category:'breathing', name:'Breath Suspension (Ictus)', duration:'3 min', difficulty:2,
+      desc:'Inhale fully. Suspend the breath — hold the "ready to sing" position without closing your throat. Hold 3–5s, then release.',
+      tip:'The hold should be in the belly/ribs, not the throat. Throat stays open. This is the gestural gateway into appoggio.',
+      reps:'8–10 repetitions', tags:['appoggio','control','awareness'] },
+    { id:'straw-phonation', category:'breathing', name:'Straw Phonation (SOVT)', duration:'5 min', difficulty:2,
+      desc:'Sing through a narrow drinking straw. Sing scales, slides, melodic patterns into the straw. The resistance re-balances airflow and fold pressure.',
+      tip:'One of the most clinically validated vocal exercises. Feel the buzz/vibration in your lips — that\'s the back-pressure working. Narrower straw = more resistance = more effect.',
+      reps:'5 minutes continuous — scales, slides, hums', tags:['sovt','efficiency','balance'] },
+
+    // SUPPORT & APPOGGIO
+    { id:'appoggio-sensation', category:'support', name:'Finding Appoggio', duration:'5 min', difficulty:2,
+      desc:'Inhale deeply — belly and ribs expand. As you exhale on an "s", actively resist the collapse: maintain that expanded feeling. The resistance IS appoggio.',
+      tip:"Don't push in or out. Maintain the inhalation posture as you sing. The old Italian school: \"singing on a column of air.\" Think: STAY OPEN.",
+      reps:'8–10 times — focus on the sensation', tags:['appoggio','support','posture'] },
+    { id:'staccato-support', category:'support', name:'Staccato on "Ha"', duration:'3 min', difficulty:2,
+      desc:'Sing short staccato notes on "Ha" up a five-tone scale. Each note from a small abdominal pulse — not from closing the throat.',
+      tip:'Place your hand on your belly. Each "Ha" = small belly contraction. Harsh attack = throat. Clean light attack = support.',
+      reps:'5–8 scales ascending and descending', tags:['support','staccato','attack'] },
+    { id:'messa-di-voce', category:'support', name:'Messa di Voce', duration:'5 min', difficulty:3,
+      desc:'Hold a single note. Start very soft (pianissimo), crescendo to full volume (forte), decrescendo back to pianissimo. Pitch stays perfectly stable.',
+      tip:'One of the supreme exercises in classical vocal training. Going flat softly = insufficient support. Going sharp loudly = over-pressing.',
+      reps:'5–8 notes on different pitches', tags:['control','dynamics','advanced','support'] },
+    { id:'rib-expansion', category:'support', name:'Lateral Rib Expansion', duration:'3 min', difficulty:1,
+      desc:'Hands on your floating ribs. Breathe in and push your ribs outward sideways into your hands. Maintain that expansion and sing a sustained note.',
+      tip:'Most singers breathe only forward. Lateral expansion gives more lung capacity and a more stable support base.',
+      reps:'8 repetitions with sustained tone', tags:['support','breath','awareness'] },
+
+    // CHEST VOICE
+    { id:'chest-call', category:'chest', name:'Belt / "Call" Pattern', duration:'4 min', difficulty:2,
+      desc:'Five-tone scale with a bold forward "call" sound — like calling across a room. Use "Hey!" or "Nay!". Stay in chest register.',
+      tip:'Power from support, not throat. If it feels strained or your voice is tired after, you\'re either too high or lacking support.',
+      reps:'6–8 scales within chest range', tags:['chest','belt','placement','modern'] },
+    { id:'chest-sustained', category:'chest', name:'Sustained "Ah" in Chest', duration:'3 min', difficulty:1,
+      desc:'Sustained open "Ah" on comfortable pitches in chest register. Full, warm, resonant tone — no pushing.',
+      tip:'A well-produced chest tone feels warm behind the sternum. Avoid pulling chest voice too high (past ~E4-F4 for most men).',
+      reps:'8–10 notes — notice where it gets tight', tags:['chest','resonance','vowel'] },
+
+    // HEAD VOICE
+    { id:'hooty-oo', category:'head', name:'Hooty "Oo" in Head Register', duration:'4 min', difficulty:2,
+      desc:'In upper range, sing a soft, round, owl-like "oo". Open, easy — no squeezing. Slide up into it gradually.',
+      tip:'Think owl: "Hoooo". Back of throat open like beginning of a yawn. No pressing. "Oo" thins and closes folds gently.',
+      reps:'6–8 sustained notes or slides', tags:['head voice','open','upper range'] },
+    { id:'puppy-whimper', category:'head', name:'Puppy Whimper', duration:'3 min', difficulty:1,
+      desc:'Imitate a puppy whimpering — gentle, slightly nasal, high-pitched. Let it slide freely around upper register.',
+      tip:'Should feel embarrassingly easy — almost silly. That effortlessness IS the exercise. Don\'t try to sound good.',
+      reps:'5–8 slides up into upper range', tags:['head voice','effortless','access'] },
+    { id:'ng-scale', category:'head', name:'"Ng" Scale in Head Voice', duration:'4 min', difficulty:2,
+      desc:'Sing a five-tone scale on the "Ng" sound (end of "sing"). This SOVT sound automatically accesses head register and forward placement.',
+      tip:'"Ng" = back of tongue to soft palate. Reduces excess air and promotes head resonance. Gets easier as you go higher.',
+      reps:'8–10 scales ascending and descending', tags:['head voice','sovt','placement'] },
+
+    // FALSETTO
+    { id:'falsetto-hoots', category:'falsetto', name:'Falsetto Hoots', duration:'3 min', difficulty:1,
+      desc:'In pure falsetto — light, airy — sing short sustained notes on "Hoo". Let it be freely breathy.',
+      tip:'Develop a strong reliable falsetto first. It\'s the foundation for head voice and mixed voice. Don\'t judge the sound.',
+      reps:'8–12 notes in upper range', tags:['falsetto','light','access'] },
+    { id:'falsetto-scales', category:'falsetto', name:'Light Falsetto Scales', duration:'4 min', difficulty:2,
+      desc:'Five-tone scale entirely in falsetto. Light and breathy. Ascend then descend. Note where it becomes unstable going low.',
+      tip:'Going lower in falsetto is much harder. The instability point going down is your "break" from below — track it over time.',
+      reps:'6–8 scales', tags:['falsetto','range','stability'] },
+    { id:'falsetto-to-chest', category:'falsetto', name:'Falsetto ↔ Chest Jumps', duration:'4 min', difficulty:3,
+      desc:'On one pitch, alternate: "Hoo (falsetto) — Hey (chest) — Hoo — Hey". Deliberate conscious register switching.',
+      tip:'This makes the difference unmistakably clear and trains deliberate register control — the first step toward mixing.',
+      reps:'6–8 repetitions on 3–4 pitches around your passaggio', tags:['falsetto','chest','register control','advanced'] },
+
+    // MIXED VOICE
+    { id:'siren', category:'mixed', name:'Full Range Siren', duration:'4 min', difficulty:2,
+      desc:'Smoothly glide from bottom to top of your range and back — like a fire truck siren. Use "ee" or "oo". Try not to flip.',
+      tip:'Your primary diagnostic tool. Listen each session: same flip point? Same airy section? Don\'t force — just observe. Over time the siren smooths out.',
+      reps:'6–8 full-range slides', tags:['mixed','passaggio','range','diagnostic'] },
+    { id:'cry-exercise', category:'mixed', name:'Cry/Wail on "Wee"', duration:'4 min', difficulty:2,
+      desc:'With a whiny, "cry" quality, sing a five-tone scale or octave jump on "Wee". Lean into the undignified quality.',
+      tip:'The cry triggers a specific laryngeal posture that allows registers to blend smoothly. Feels silly, works brilliantly.',
+      reps:'6–8 patterns through your passaggio', tags:['mixed','passaggio','blend'] },
+    { id:'nay-scale', category:'mixed', name:'"Nay" Scale Through the Break', duration:'5 min', difficulty:3,
+      desc:'Sing "Nay Nay Nay Nay Nay" on a five-tone scale, pushing through your passaggio with chest energy. The "ay" and twang carry you higher.',
+      tip:'"Nay" adds twang (fold mass) which helps bridge the gap. Go into the keys where your voice wants to flip — and fight it.',
+      reps:'8–10 scales through and past your break', tags:['mixed','passaggio','chest mix','advanced'] },
+    { id:'gee-octave', category:'mixed', name:'"Gee" Octave Jump', duration:'4 min', difficulty:3,
+      desc:'Sing 1-8-1 on "Gee". The "G" consonant initiates efficient fold closure; "ee" promotes forward placement.',
+      tip:'Forces the voice to navigate the passaggio in one move. If you flip to falsetto on top — great, you\'re in the right range. Over time, keep chest mix on top.',
+      reps:'6–8 jumps ascending by half steps', tags:['mixed','octave','advanced','passaggio'] },
+
+    // RESONANCE
+    { id:'humming', category:'resonance', name:'Sustained Humming', duration:'4 min', difficulty:1,
+      desc:'Hum on "mmm" with lips lightly touching. Feel vibration in lips, cheeks, forehead. Slide up and down your range.',
+      tip:'More vibration in chest than face = resonance too low. Place the hum forward — imagine sound bouncing off your front teeth.',
+      reps:'4–5 minutes continuous', tags:['resonance','placement','awareness','sovt'] },
+    { id:'ee-vowel', category:'resonance', name:'"Ee" Forward Placement', duration:'3 min', difficulty:1,
+      desc:'Sustained "ee" notes on comfortable pitches. Focus on WHERE you feel resonance — aim for the mask (cheeks, nose bridge).',
+      tip:'"Ee" is the most naturally forward-placed vowel. Find it here, then carry that placement into "Ah" and "Oh".',
+      reps:'8–10 notes across the range', tags:['resonance','placement','vowel'] },
+    { id:'vowel-modification', category:'resonance', name:'Vowel Modification', duration:'5 min', difficulty:3,
+      desc:'Sing a scale on "Ah". As you ascend: Ah → Uh (cup) → Aw. Allow the modification on high notes — don\'t maintain a pure Ah.',
+      tip:'On high notes, pure "Ah" fights vocal acoustics. Modification often makes high notes EASIER. Make it conscious.',
+      reps:'5–8 scales, pay attention to the modification point', tags:['resonance','vowel modification','high notes','advanced'] },
+    { id:'twang', category:'resonance', name:'Twang Activation — "Quack"', duration:'3 min', difficulty:2,
+      desc:'Imitate a duck: maximum nasal, buzzy "Quack quack quack!" Fully exaggerate. Then gradually reduce while keeping the brightness.',
+      tip:'Twang can nearly double your volume with no extra effort. The quack is extreme — 20–30% twang gives a bright, carrying tone without shouting.',
+      reps:'10–12 exaggerated quacks, then 5–6 scales with mild twang', tags:['resonance','twang','belt','modern'] },
+
+    // ARTICULATION
+    { id:'tongue-twisters', category:'articulation', name:'Tongue Twisters', duration:'3 min', difficulty:2,
+      desc:'Speak then sing: "Red lorry yellow lorry", "She sells seashells", "Unique New York". Slow first, then faster.',
+      tip:'Consonants = crisp and released immediately. Vowel carries the tone. Don\'t hang onto consonants — release into the vowel.',
+      reps:'5–8 rounds mixing spoken and sung', tags:['articulation','diction','clarity'] },
+    { id:'jaw-release', category:'articulation', name:'Jaw Release', duration:'2 min', difficulty:1,
+      desc:'Massage your masseter muscles (corners of jaw). Let jaw drop open with gravity — don\'t force it. Sing a sustained "Yah".',
+      tip:'Jaw tension is one of the most common issues in male singers. Jaw drops with gravity, not force. Let it be heavy.',
+      reps:'1–2 min massage, then 5–8 sustained "Yah" notes', tags:['articulation','tension release','jaw'] },
+    { id:'consonant-singing', category:'articulation', name:'Consonant-Vowel Clarity', duration:'3 min', difficulty:2,
+      desc:'Five-tone scales on: "Ba Ba Ba", "Da Da Da", "La La La", "Ma Ma Ma". Crisp consonant → immediately full open vowel.',
+      tip:'Crisp consonant, full sustained vowel. Avoid swallowing consonants or breaking legato with over-pronounced ones.',
+      reps:'4–6 scales per syllable', tags:['articulation','diction','clarity','legato'] },
+];
+
+// ==========================================
+//  TIPS DATABASE
+// ==========================================
+
+const BUILT_IN_TIPS = [
+    // BREATHING
+    { cat:'breathing', text:"Before you sing a phrase, don't \"grab\" for air — let it fall in naturally with a low, open belly." },
+    { cat:'breathing', text:'Inhale like you\'re smelling a flower — slow, quiet, through the nose. Audible inhalations create tension.' },
+    { cat:'breathing', text:'Never let your shoulders rise when you inhale. That\'s chest breathing and it cuts off your support.' },
+    { cat:'breathing', text:'Think "out and down" for the belly on inhale — not "in and up".' },
+    { cat:'breathing', text:'A full breath takes only 1–2 seconds. Quick silent inhale, long controlled exhale.' },
+
+    // SUPPORT
+    { cat:'support', text:'Imagine you\'re about to lift something heavy — that pre-lift feeling in your core is your support.' },
+    { cat:'support', text:'The ribs should stay expanded even as you exhale. That resistance IS the support.' },
+    { cat:'support', text:'Think of singing on a column of air — like riding an elevator upward with the air, not fighting against it.' },
+    { cat:'support', text:'If you run out of air before the phrase ends, your support collapsed too early — keep the ribs out.' },
+    { cat:'support', text:'Support comes from the lower abdomen and ribs, never from pressing the throat.' },
+
+    // JAW & TENSION
+    { cat:'articulation', text:'Drop your jaw with gravity, don\'t push it open. Let it be heavy.' },
+    { cat:'articulation', text:'Massage the masseter muscle (just in front of the ear) for 30 seconds before singing.' },
+    { cat:'articulation', text:'Your tongue tip should always rest touching your lower front teeth. A bunched tongue = tension.' },
+    { cat:'articulation', text:'If you feel throat tension, yawn once — it resets your laryngeal position.' },
+    { cat:'articulation', text:'Check your neck: is it forward? Gently pull it back — you\'ll feel the throat space open.' },
+
+    // RESONANCE
+    { cat:'resonance', text:'The buzz should be in your face, not your chest. Forward! Imagine sound bouncing off your cheekbones.' },
+    { cat:'resonance', text:'Sing to the back wall — let the sound travel far, not just to the person in front of you.' },
+    { cat:'resonance', text:'A slight smile brightens the tone. Dark jaw + bright smile = the classic resonance target.' },
+    { cat:'resonance', text:'Think of the sound bouncing off the hard palate (roof of mouth) — forward, not backward.' },
+    { cat:'resonance', text:'If your voice sounds dull or covered, add 20% twang. If it sounds harsh, reduce it.' },
+
+    // HEAD VOICE
+    { cat:'head', text:'Think "up and over" — like throwing the sound over your head into the distance.' },
+    { cat:'head', text:'An owl sound ("Hoooo") instantly accesses head register without tension. Use it when stuck.' },
+    { cat:'head', text:'Imagine your voice exiting from the top of your head, not your mouth, on high notes.' },
+    { cat:'head', text:'Head voice should feel effortless. If it requires effort, you\'re still using chest muscle memory.' },
+
+    // FALSETTO
+    { cat:'falsetto', text:'Falsetto should feel like air passing through freely — almost no physical sensation.' },
+    { cat:'falsetto', text:'If your falsetto cracks going low, that\'s where your current passaggio lives. Note the pitch.' },
+    { cat:'falsetto', text:'Don\'t avoid falsetto because it sounds weak. Developing it is essential for head voice and mix.' },
+
+    // MIXED VOICE
+    { cat:'mixed', text:'Don\'t force through the break — soften INTO it, like a gentle lean rather than a push.' },
+    { cat:'mixed', text:'A slight whine or cry quality automatically helps navigate the passaggio. Undignified but effective.' },
+    { cat:'mixed', text:"Don't think \"higher\" — think \"more forward\" as you ascend through the break." },
+    { cat:'mixed', text:'The passaggio is not an obstacle — it\'s a transition zone. Train it repeatedly and it will smooth out.' },
+
+    // CHEST VOICE
+    { cat:'chest', text:'Chest voice power comes from support below, not from pressing in the throat.' },
+    { cat:'chest', text:'A free chest tone should feel like your voice fills the room without effort. If you\'re straining, drop back.' },
+    { cat:'chest', text:'The chest register "ceiling" rises over time as your technique improves. Don\'t force it up.' },
+
+    // WARMUP
+    { cat:'warmup', text:'Always warm up before practicing — cold vocal folds are like cold muscles. 5–10 min minimum.' },
+    { cat:'warmup', text:'If your voice is tired, do only gentle SOVTs (straw, lip trills). No full-voice work on tired days.' },
+    { cat:'warmup', text:'A good warm-up starts soft and low, gradually expands range and volume. Never blast high notes cold.' },
+];
+
+// ==========================================
+//  STATE
+// ==========================================
+
+function getState() {
+    try { return JSON.parse(localStorage.getItem('singing_v2') || '{}'); }
+    catch(e) { return {}; }
+}
+function saveState(s) { localStorage.setItem('singing_v2', JSON.stringify(s)); }
+function getTodayKey() { return new Date().toISOString().slice(0, 10); }
+function getSession(k) {
+    const s = getState(); if (!s.sessions) s.sessions = {};
+    if (!s.sessions[k]) s.sessions[k] = { done: [], exercises: [] };
+    return s.sessions[k];
+}
+function saveSession(k, session) {
+    const s = getState(); if (!s.sessions) s.sessions = {};
+    s.sessions[k] = session; saveState(s);
+}
+function getNotes(id) { const s = getState(); return (s.notes && s.notes[id]) || ''; }
+function saveNotes(id, v) {
+    const s = getState(); if (!s.notes) s.notes = {};
+    s.notes[id] = v; saveState(s);
+}
+function getStage(id) { const s = getState(); return (s.stages && s.stages[id]) || 0; }
+function setStage(id, n) {
+    const s = getState(); if (!s.stages) s.stages = {};
+    s.stages[id] = n; saveState(s);
+}
+function getCustomExercises() { return getState().customExercises || []; }
+function saveCustomExercises(arr) {
+    const s = getState(); s.customExercises = arr; saveState(s);
+}
+function getCustomTips() { return getState().customTips || []; }
+function saveCustomTips(arr) {
+    const s = getState(); s.customTips = arr; saveState(s);
+}
+function getWeeksDone() { return getState().weeksDone || []; }
+function toggleWeekDone(w) {
+    const s = getState(); if (!s.weeksDone) s.weeksDone = [];
+    if (s.weeksDone.includes(w)) s.weeksDone = s.weeksDone.filter(x => x !== w); else s.weeksDone.push(w);
+    saveState(s);
+}
+function getStreak() {
+    const sessions = getState().sessions || {}; let streak = 0; const today = new Date();
+    for (let i = 0; i < 60; i++) {
+        const d = new Date(today); d.setDate(d.getDate()-i);
+        const key = d.toISOString().slice(0,10);
+        if (sessions[key] && sessions[key].done && sessions[key].done.length > 0) streak++;
+        else if (i > 0) break;
+    }
+    return streak;
+}
+function getTotalSessions() {
+    return Object.values(getState().sessions||{}).filter(s=>s.done&&s.done.length>0).length;
+}
+function getAllExercises() {
+    return [...EXERCISES, ...getCustomExercises()];
+}
+
+// ==========================================
+//  TIMERS
+// ==========================================
+
+const activeTimers = {};
+function startTimer(id) {
+    if (activeTimers[id] && activeTimers[id].interval) return;
+    if (!activeTimers[id]) activeTimers[id] = { seconds: 0 };
+    activeTimers[id].interval = setInterval(() => { activeTimers[id].seconds++; updateTimerDisplay(id); }, 1000);
+    const btn = document.getElementById('btn-start-'+id);
+    if (btn) { btn.textContent = '⏸ Pause'; btn.onclick = () => pauseTimer(id); }
+}
+function pauseTimer(id) {
+    if (!activeTimers[id]) return;
+    clearInterval(activeTimers[id].interval); activeTimers[id].interval = null;
+    const btn = document.getElementById('btn-start-'+id);
+    if (btn) { btn.textContent = '▶ Resume'; btn.onclick = () => startTimer(id); }
+}
+function resetTimer(id) {
+    if (activeTimers[id]) { clearInterval(activeTimers[id].interval); delete activeTimers[id]; }
+    const el = document.getElementById('timer-'+id); if (el) el.textContent = '0:00';
+    const btn = document.getElementById('btn-start-'+id);
+    if (btn) { btn.textContent = '▶ Start timer'; btn.onclick = () => startTimer(id); }
+}
+function updateTimerDisplay(id) {
+    const s = activeTimers[id].seconds;
+    const txt = Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+    const el = document.getElementById('timer-'+id); if (el) el.textContent = txt;
+    const sel = document.getElementById('stimer-'+id); if (sel) sel.textContent = txt;
+}
+
+// ==========================================
+//  YOUTUBE LINKS
+//  Values starting with "v:" are direct video IDs (youtube.com/watch?v=ID)
+//  All other values are search queries (youtube.com/results?search_query=...)
+// ==========================================
+const YOUTUBE_LINKS = {
+    'lip-trill':        'lip trill lip roll singing SOVT exercise tutorial vocal coach',
+    'tongue-trill':     'tongue trill rolling r singing vocal exercise tutorial',
+    'yawn-sigh':        'yawn sigh vocal exercise singing tutorial',
+    'five-tone-me':     'five tone scale singing exercise twang placement tutorial',
+    'octave-repeat':    'nay octave repeat singing exercise twang vocal coach',
+    'belly-breath':     'diaphragmatic belly breathing singing tutorial vocal coach',
+    'box-breathing':    'box breathing singers breath control 4 4 4 4 tutorial',
+    'hissing':          'hissing breath control singing exercise sustained hiss',
+    'panting':          'panting diaphragm exercise singers diaframma',
+    'breath-suspension':'breath suspension appoggio posture singing exercise tutorial',
+    'straw-phonation':  'v:0xYDvwvmBIM', // Dr. Ingo Titze — NCVS, verified
+    'appoggio-sensation':'appoggio breath support sensation singing exercise tutorial',
+    'staccato-support': 'staccato support singing exercise breath impulse tutorial',
+    'messa-di-voce':    'messa di voce singing exercise swell tutorial vocal coach',
+    'rib-expansion':    'lateral rib expansion breathing singing support exercise',
+    'chest-call':       'belting singing technique supported call exercise vocal coach',
+    'chest-sustained':  'chest voice sustained ah singing exercise tutorial',
+    'hooty-oo':         'head voice hooty oo singing exercise tutorial register',
+    'puppy-whimper':    'puppy whimper singing exercise head voice nghi tutorial',
+    'ng-scale':         'ng scale head voice singing exercise SOVT tutorial',
+    'falsetto-hoots':   'falsetto exercise singing development tutorial notes',
+    'falsetto-scales':  'falsetto scales singing exercise light register tutorial',
+    'falsetto-to-chest':'chest voice falsetto switch deliberate register exercise',
+    'siren':            'siren vocal exercise full range glide tutorial',
+    'cry-exercise':     'cry voice singing exercise passaggio blend tutorial',
+    'nay-scale':        'nay scale mixed voice passaggio singing exercise tutorial',
+    'gee-octave':       'gee octave jump singing exercise mixed voice passaggio',
+    'humming':          'humming vocal exercise singing resonance forward placement',
+    'ee-vowel':         'ee vowel forward resonance singing exercise placement tutorial',
+    'twang':            'twang singing exercise duck quack activation tutorial vocal coach',
+};
+
+function getYoutubeUrl(exId) {
+    const val = YOUTUBE_LINKS[exId];
+    if (!val) return null;
+    if (val.startsWith('v:')) return `https://www.youtube.com/watch?v=${val.slice(2)}`;
+    return `https://www.youtube.com/results?search_query=${encodeURIComponent(val)}`;
+}
+
+// ==========================================
+//  EXERCISES PAGE
+// ==========================================
+
+let expandedExercise = null;
+let expandedSuggested = null;
+let activeFilter = null;
+
+function renderFilterChips() {
+    const c = document.getElementById('filter-chips');
+    let h = `<div class="chip ${activeFilter===null?'active':''}" onclick="setFilter(null)">Tutti</div>`;
+    CATEGORIES.forEach(cat => {
+        h += `<div class="chip ${activeFilter===cat.id?'active':''}" onclick="setFilter('${cat.id}')">${cat.icon} ${catName(cat)}</div>`;
+    });
+    c.innerHTML = h;
+    // update add exercise button label
+    const btn = document.getElementById('btn-add-exercise');
+    if (btn) btn.textContent = t('addMyExercise');
+}
+function setFilter(id) { activeFilter = id; renderFilterChips(); renderExercises(document.getElementById('exercise-search').value.toLowerCase()); }
+
+function renderExercises(filter='') {
+    const container = document.getElementById('exercise-list');
+    const todayKey = getTodayKey();
+    const session = getSession(todayKey);
+    const done = session.done || [];
+    const all = getAllExercises();
+    let html = '';
+
+    CATEGORIES.forEach(cat => {
+        if (activeFilter && activeFilter !== cat.id) return;
+        const exercises = all.filter(e => e.category===cat.id &&
+            (!filter || e.name.toLowerCase().includes(filter) ||
+             (e.tags||[]).some(t=>t.includes(filter)) ||
+             e.desc.toLowerCase().includes(filter)));
+        if (exercises.length === 0) return;
+        html += `<div class="category-header"><span>${cat.icon}</span><span>${cat.name}</span><span class="category-count">${exercises.length}</span></div>`;
+        exercises.forEach(ex => {
+            const isDone = done.includes(ex.id);
+            const isExpanded = expandedExercise === ex.id;
+            const isCustom = !!ex.custom;
+            const diffDots = [1,2,3].map(i=>`<div class="dot ${i<=ex.difficulty?'filled':''}"></div>`).join('');
+            html += `<div class="exercise-item ${isExpanded?'expanded':''} ${isCustom?'custom-ex':''}" onclick="toggleExercise('${ex.id}')">
+                <div class="exercise-difficulty">${diffDots}</div>
+                <div class="exercise-title">${exT(ex,'name')} ${isCustom?`<span class="custom-badge">${t('custom')}</span>`:''}</div>
+                ${ex.stages?`<span class="exercise-meta" style="color:var(--warning)">${t('stageOf')} ${getStage(ex.id)+1}/${ex.stages.length}</span>`:`<span class="exercise-meta">${ex.duration||''}</span>`}
+                ${isDone?'<span class="done-badge">✓</span>':''}
+            </div>`;
+            if (isExpanded) {
+                const notes = getNotes(ex.id);
+                const stageIdx = getStage(ex.id);
+                const stages = exStages(ex);
+                const currentStage = stages ? stages[stageIdx] : null;
+                const diffLevels = [t('beginner'), t('intermediate'), t('advanced')];
+                html += `<div class="exercise-detail open" onclick="event.stopPropagation()">
+                    <div style="margin-bottom:12px; display:flex; flex-wrap:wrap; gap:4px;">
+                        ${(ex.tags||[]).map(tg=>`<span class="tag">${tg}</span>`).join('')}
+                        ${ex.duration?`<span class="tag">⏱ ${ex.duration}</span>`:''}
+                        <span class="tag">${diffLevels[(ex.difficulty||1)-1]}</span>
+                    </div>
+                    <div class="detail-section"><div class="detail-label">${t('howTo')}</div><div class="detail-text">${exT(ex,'desc')}</div></div>
+                    ${currentStage ? `
+                    <div class="stage-widget">
+                        <div class="stage-header">
+                            <span class="stage-badge">${t('stageOf')} ${stageIdx+1} ${t('of')} ${stages.length}</span>
+                            <span class="stage-name">${currentStage.label}</span>
+                        </div>
+                        <div class="stage-desc">${currentStage.desc}</div>
+                        <div class="detail-text" style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">${currentStage.reps}</div>
+                        <div class="stage-controls">
+                            ${stageIdx > 0 ? `<button class="btn xs secondary" onclick="changeStage('${ex.id}', ${stageIdx-1})">${t('prevStage')}</button>` : ''}
+                            ${stageIdx < stages.length-1 ? `<button class="btn xs warning" onclick="changeStage('${ex.id}', ${stageIdx+1})">${t('advanceTo')} ${stageIdx+2} →</button>` : `<span style="font-size:12px; color:var(--success);">${t('maxStage')}</span>`}
+                            <span class="stage-progress">${t('stageOf')} ${stageIdx+1} / ${stages.length}</span>
+                        </div>
+                    </div>` : `
+                    <div class="detail-section"><div class="detail-label">${t('repsTarget')}</div><div class="detail-text">${exT(ex,'reps')}</div></div>`}
+                    ${(ex.tip||IT_EX[ex.id]?.tip) ? `<div class="detail-section"><div class="detail-label">${t('tipLabel')}</div><div class="tip-box">${exT(ex,'tip')}</div></div>` : ''}
+                    ${getYoutubeUrl(ex.id) ? `<div class="detail-section"><a class="yt-link" href="${getYoutubeUrl(ex.id)}" target="_blank" rel="noopener">▶ Guarda esempio su YouTube</a></div>` : ''}
+                    <div class="detail-section">
+                        <div class="detail-label">Timer</div>
+                        <div class="timer-display" id="timer-${ex.id}">0:00</div>
+                        <div class="timer-controls">
+                            <button class="btn sm" id="btn-start-${ex.id}" onclick="startTimer('${ex.id}')">${t('startTimer')}</button>
+                            <button class="btn sm secondary" onclick="resetTimer('${ex.id}')">${t('reset')}</button>
+                        </div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-label">${t('personalNotes')}</div>
+                        <textarea class="notes-input" id="notes-${ex.id}" placeholder="Come ti è sembrato? Su cosa concentrarsi la prossima volta..." onchange="saveNotes('${ex.id}', this.value)">${notes}</textarea>
+                    </div>
+                    <div class="btn-row">
+                        <button class="btn ${isDone?'secondary':'success'}" onclick="toggleDone('${ex.id}')">${isDone?t('unmarkDone'):t('markDone')}</button>
+                        <button class="btn secondary" onclick="addToToday('${ex.id}')">${t('addToToday')}</button>
+                        ${isCustom ? `<button class="btn secondary" onclick="openEditExercise('${ex.id}')">${t('editBtn')}</button>` : ''}
+                    </div>
+                </div>`;
+            }
+        });
+    });
+
+    if (!html) html = `<div class="empty-state"><div class="empty-icon">🔍</div>No exercises found.<br>Try a different search or filter.</div>`;
+    container.innerHTML = html;
+
+    Object.keys(activeTimers).forEach(id => {
+        const el = document.getElementById('timer-'+id);
+        if (el) {
+            updateTimerDisplay(id);
+            if (activeTimers[id].interval) {
+                const btn = document.getElementById('btn-start-'+id);
+                if (btn) { btn.textContent = '⏸ Pause'; btn.onclick = () => pauseTimer(id); }
+            }
+        }
+    });
+}
+
+function toggleExercise(id) {
+    expandedExercise = expandedExercise === id ? null : id;
+    renderExercises(document.getElementById('exercise-search').value.toLowerCase());
+    if (expandedExercise) {
+        setTimeout(() => {
+            const items = document.querySelectorAll('.exercise-item.expanded');
+            if (items.length) items[0].scrollIntoView({ behavior:'smooth', block:'nearest' });
+        }, 60);
+    }
+}
+function filterExercises() { renderExercises(document.getElementById('exercise-search').value.toLowerCase()); }
+
+function changeStage(id, newIdx) {
+    setStage(id, newIdx);
+    renderExercises(document.getElementById('exercise-search').value.toLowerCase());
+}
+
+function toggleDone(exerciseId) {
+    const k = getTodayKey(); const session = getSession(k);
+    if (!session.done) session.done = [];
+    if (session.done.includes(exerciseId)) session.done = session.done.filter(id=>id!==exerciseId);
+    else { session.done.push(exerciseId); if (!session.exercises.includes(exerciseId)) session.exercises.push(exerciseId); }
+    saveSession(k, session);
+    renderExercises(document.getElementById('exercise-search').value.toLowerCase());
+    if (document.getElementById('page-session').classList.contains('active')) renderSession();
+}
+
+function addToToday(exerciseId) {
+    const k = getTodayKey(); const session = getSession(k);
+    if (!session.exercises.includes(exerciseId)) { session.exercises.push(exerciseId); saveSession(k, session); }
+    showPage('session');
+}
+
+// ==========================================
+//  SUGGESTED SESSION
+// ==========================================
+
+const SONG_TIPS_IT = {
+    1: "Prendi una frase semplice da una canzone e concentrati solo sul respiro: la pancia si espande sull'inspirazione? Si sgonfia lentamente mentre canti la frase?",
+    2: "Canta una frase breve due volte — una in registro di petto, una in falsetto. Nota la differenza. In quale registro vuole stare naturalmente?",
+    3: "Canta una strofa e concentrati sul mantenere la gabbia toracica espansa per tutto il tempo. Le costole rimangono aperte fino all'ultima parola?",
+    4: "Scegli una frase che si trova comodamente nel tuo registro di petto. Cantala con la sensazione di chiamarla dall'altra parte di una grande stanza — in avanti, sostenuta.",
+    5: "Canta una linea melodica interamente in falsetto dall'inizio alla fine. Mantienila leggera e libera. Nessuna spinta — se richiede sforzo, è troppo forte.",
+    6: "Prendi una frase che raggiunge il tuo registro superiore. Prova a cantarla in voce di testa (connessa, meno aerea del falsetto). Nota dove vuole connettersi.",
+    7: "Scegli una frase che attraversa il tuo passaggio — una che si muove da note più basse a note più alte. Cantala lentamente, osservando cosa succede al passaggio.",
+    8: "Canta una frase con un leggero twang aggiunto. Porta meglio? Sembra più facile? Confronta con e senza.",
+    9: "Trova una frase melodica che si muove attraverso il tuo passaggio. Cantala con una leggera qualità di 'pianto' al punto di transizione. Si ammorbidisce?",
+    10: "Canta una frase e aggiungi un'ondata deliberata (piano → forte → piano). Riesci a rimanere perfettamente intonato attraverso il cambiamento dinamico?",
+    11: "Scegli una strofa con consonanti variate. Cantala lentamente, rendendo ogni consonante nitida e ogni vocale completamente aperta. Poi canta a tempo pieno.",
+    12: "Canta una strofa o ritornello completo applicando tutto: respiro nella pancia, costole aperte, posizionamento in avanti, liscio attraverso il passaggio, consonanti chiare.",
+};
+
+function parseDuration(dur) {
+    if (!dur) return 4;
+    const m = dur.match(/(\d+)/);
+    return m ? parseInt(m[1]) : 4;
+}
+
+function getSuggestedSession() {
+    const weeksDone = getWeeksDone();
+    let currentCycle = null;
+    for (const w of PLAN) { if (!weeksDone.includes(w.week)) { currentCycle = w; break; } }
+    if (!currentCycle) return null; // all cycles done
+
+    const all = getAllExercises();
+
+    // Recent history — which exercises done in last 14 days
+    const sessions = getState().sessions || {};
+    const today = new Date();
+    const recentDone = new Set();
+    for (let i = 1; i <= 14; i++) {
+        const d = new Date(today); d.setDate(d.getDate() - i);
+        const key = d.toISOString().slice(0, 10);
+        if (sessions[key] && sessions[key].done) sessions[key].done.forEach(id => recentDone.add(id));
+    }
+
+    // Already done today
+    const todayKey = getTodayKey();
+    const todayDone = new Set((getSession(todayKey).done || []));
+
+    // ── Warm-up block (5–7 min) ─────────────────────────────────
+    // Determine the primary skill area of this cycle
+    const cycleCats = currentCycle.exercises
+        .map(id => all.find(e => e.id === id))
+        .filter(Boolean).map(e => e.category);
+    const primaryCat = cycleCats[0] || 'warmup';
+
+    // Always anchor with lip-trill, then pick a second based on context
+    const warmupCandidates = (() => {
+        if (['breathing','support'].includes(primaryCat))
+            return ['lip-trill', 'yawn-sigh', 'hissing'];
+        if (['falsetto','head','mixed'].includes(primaryCat))
+            return ['lip-trill', 'yawn-sigh', 'octave-repeat'];
+        if (['resonance','articulation'].includes(primaryCat))
+            return ['lip-trill', 'five-tone-me', 'yawn-sigh'];
+        return ['lip-trill', 'yawn-sigh', 'five-tone-me'];
+    })();
+
+    let warmupMins = 0;
+    const warmup = [];
+    for (const id of warmupCandidates) {
+        const ex = all.find(e => e.id === id);
+        if (!ex) continue;
+        const dur = parseDuration(ex.duration);
+        if (warmupMins + dur <= 7) { warmup.push(id); warmupMins += dur; }
+        if (warmupMins >= 5) break;
+    }
+
+    // ── Focus block (12–16 min) ──────────────────────────────────
+    // Cycle exercises, excluding warm-ups, prioritising not-recently-done
+    const cycleExIds = currentCycle.exercises.filter(id => !warmup.includes(id));
+    // Sort: not recently done and not done today first
+    const sorted = [
+        ...cycleExIds.filter(id => !recentDone.has(id) && !todayDone.has(id)),
+        ...cycleExIds.filter(id => recentDone.has(id) && !todayDone.has(id)),
+        ...cycleExIds.filter(id => todayDone.has(id)),
+    ];
+
+    let focusMins = 0;
+    const focus = [];
+    for (const id of sorted) {
+        const ex = all.find(e => e.id === id);
+        if (!ex) continue;
+        const dur = parseDuration(ex.duration);
+        if (focusMins + dur <= 16) { focus.push(id); focusMins += dur; }
+        if (focusMins >= 12) break;
+    }
+
+    const songTip = SONG_TIPS_IT[currentCycle.week] || "Applica il focus di oggi a una frase breve di una canzone che stai studiando.";
+
+    return { cycle: currentCycle, warmup, focus, warmupMins, focusMins, songTip, recentDone, todayDone };
+}
+
+function renderSuggestedSession() {
+    const container = document.getElementById('suggested-session');
+    const s = getSuggestedSession();
+    if (!s) {
+        container.innerHTML = `<div class="card" style="text-align:center; color:var(--success); font-weight:600; font-size:14px;">🎉 Hai completato tutti i cicli! Sentiti libero di ripassare qualsiasi argomento.</div>`;
+        return;
+    }
+    const all = getAllExercises();
+    const cycleLabel = `Ciclo ${s.cycle.week}`;
+    const cycleTitle = planT(s.cycle, 'title');
+
+    function exRow(id) {
+        const ex = all.find(e => e.id === id);
+        if (!ex) return '';
+        const isDoneToday = s.todayDone.has(id);
+        const doneRecently = s.recentDone.has(id) && !isDoneToday;
+        const isFresh = !s.recentDone.has(id) && !isDoneToday;
+        const dur = parseDuration(ex.duration);
+        const isExpanded = expandedSuggested === id;
+        const badge = isDoneToday
+            ? `<span class="suggestion-ex-done">✓ fatto oggi</span>`
+            : doneRecently
+            ? `<span class="suggestion-ex-done">fatto di recente</span>`
+            : '';
+
+        // Build detail section (same content as Esercizi, without edit/addToToday buttons)
+        let detail = '';
+        if (isExpanded) {
+            const stageIdx = getStage(ex.id);
+            const stages = exStages(ex);
+            const currentStage = stages ? stages[stageIdx] : null;
+            const diffLevels = [t('beginner'), t('intermediate'), t('advanced')];
+            const notes = getNotes(ex.id);
+            detail = `<div class="suggestion-ex-detail" onclick="event.stopPropagation()">
+                <div style="margin-bottom:12px; display:flex; flex-wrap:wrap; gap:4px;">
+                    ${(ex.tags||[]).map(tg=>`<span class="tag">${tg}</span>`).join('')}
+                    ${ex.duration?`<span class="tag">⏱ ${ex.duration}</span>`:''}
+                    <span class="tag">${diffLevels[(ex.difficulty||1)-1]}</span>
+                </div>
+                <div class="detail-section"><div class="detail-label">${t('howTo')}</div><div class="detail-text">${exT(ex,'desc')}</div></div>
+                ${currentStage ? `
+                <div class="stage-widget">
+                    <div class="stage-header">
+                        <span class="stage-badge">${t('stageOf')} ${stageIdx+1} ${t('of')} ${stages.length}</span>
+                        <span class="stage-name">${currentStage.label}</span>
+                    </div>
+                    <div class="stage-desc">${currentStage.desc}</div>
+                    <div class="detail-text" style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">${currentStage.reps}</div>
+                    <div class="stage-controls">
+                        ${stageIdx > 0 ? `<button class="btn xs secondary" onclick="changeSuggestedStage('${ex.id}',${stageIdx-1})">${t('prevStage')}</button>` : ''}
+                        ${stageIdx < stages.length-1 ? `<button class="btn xs warning" onclick="changeSuggestedStage('${ex.id}',${stageIdx+1})">${t('advanceTo')} ${stageIdx+2} →</button>` : `<span style="font-size:12px; color:var(--success);">${t('maxStage')}</span>`}
+                        <span class="stage-progress">${t('stageOf')} ${stageIdx+1} / ${stages.length}</span>
+                    </div>
+                </div>` : `
+                <div class="detail-section"><div class="detail-label">${t('repsTarget')}</div><div class="detail-text">${exT(ex,'reps')}</div></div>`}
+                ${(ex.tip||IT_EX[ex.id]?.tip) ? `<div class="detail-section"><div class="detail-label">${t('tipLabel')}</div><div class="tip-box">${exT(ex,'tip')}</div></div>` : ''}
+                ${getYoutubeUrl(ex.id) ? `<div class="detail-section"><a class="yt-link" href="${getYoutubeUrl(ex.id)}" target="_blank" rel="noopener">▶ Guarda esempio su YouTube</a></div>` : ''}
+                <div class="detail-section">
+                    <div class="detail-label">Timer</div>
+                    <div class="timer-display" id="stimer-${ex.id}">0:00</div>
+                    <div class="timer-controls">
+                        <button class="btn sm" id="sbtn-start-${ex.id}" onclick="startSuggestedTimer('${ex.id}')">${t('startTimer')}</button>
+                        <button class="btn sm secondary" onclick="resetSuggestedTimer('${ex.id}')">${t('reset')}</button>
+                    </div>
+                </div>
+                <div class="detail-section">
+                    <div class="detail-label">${t('personalNotes')}</div>
+                    <textarea class="notes-input" id="snotes-${ex.id}" placeholder="Come ti è sembrato? Su cosa concentrarsi la prossima volta..." onchange="saveNotes('${ex.id}', this.value)">${notes}</textarea>
+                </div>
+                <div class="btn-row">
+                    <button class="btn ${isDoneToday?'success':'secondary'}" onclick="markSuggestedDone('${ex.id}')">${isDoneToday?t('unmarkDone'):'✓ Fatto'}</button>
+                </div>
+            </div>`;
+        }
+
+        return `<div class="suggestion-ex-wrap ${isFresh&&!isDoneToday?'fresh':''} ${isDoneToday?'ex-done-today':''}" data-sugg-id="${id}">
+            <div class="suggestion-ex-row" onclick="toggleSuggested('${id}')">
+                <div class="suggestion-ex-name">${exT(ex,'name')}</div>
+                <span class="suggestion-ex-meta">${dur} min</span>
+                ${badge}
+                <span class="suggestion-ex-expand">${isExpanded?'▲':'▼'}</span>
+                <button class="btn xs ${isDoneToday?'success':'secondary'}" onclick="event.stopPropagation(); markSuggestedDone('${id}')">${isDoneToday?'✓':'✓ Fatto'}</button>
+            </div>
+            ${detail}
+        </div>`;
+    }
+
+    const warmupRows = s.warmup.map(id => exRow(id)).join('');
+    const focusRows = s.focus.map(id => exRow(id)).join('');
+    const allIds = [...s.warmup, ...s.focus];
+
+    const txt = {
+        suggested: 'Sessione suggerita',
+        warmup: 'Riscaldamento',
+        focus: `Tecnica — ${cycleTitle}`,
+        song: 'Applicazione alla canzone',
+        songTime: '3–5 min',
+        addAll: '✓ Fatto tutto',
+        fresh: 'Priorità — non fatto di recente',
+    };
+
+    container.innerHTML = `
+    <div class="card" style="border-color: var(--accent); background: linear-gradient(135deg, rgba(124,92,191,0.07) 0%, var(--card) 100%);">
+        <div class="suggestion-header">
+            <span class="suggestion-title">${txt.suggested}</span>
+            <span class="suggestion-cycle-badge">${cycleLabel}</span>
+        </div>
+
+        <div class="suggestion-block">
+            <div class="suggestion-block-header">
+                <span class="suggestion-block-icon">🌅</span>
+                <span class="suggestion-block-title">${txt.warmup}</span>
+                <span class="suggestion-block-time">~${s.warmupMins} min</span>
+            </div>
+            ${warmupRows}
+        </div>
+
+        <div class="suggestion-block">
+            <div class="suggestion-block-header">
+                <span class="suggestion-block-icon">🎯</span>
+                <span class="suggestion-block-title">${txt.focus}</span>
+                <span class="suggestion-block-time">~${s.focusMins} min</span>
+            </div>
+            <p style="font-size:11px; color:var(--accent-light); margin-bottom:8px;">▌ ${txt.fresh}</p>
+            ${focusRows}
+        </div>
+
+        <div class="song-application-card">
+            <div class="song-application-header">
+                <span style="font-size:16px;">🎵</span>
+                <span class="song-application-title">${txt.song} <span style="font-weight:400; color:var(--text-muted);">(${txt.songTime})</span></span>
+            </div>
+            <div class="song-application-text">${s.songTip}</div>
+        </div>
+
+        <div style="margin-top:12px;">
+            <button class="btn sm" onclick="addAllSuggested([${allIds.map(id=>`'${id}'`).join(',')}])">
+                ${txt.addAll}
+            </button>
+        </div>
+    </div>`;
+}
+
+function addAllSuggested(ids) {
+    const k = getTodayKey();
+    const session = getSession(k);
+    if (!session.done) session.done = [];
+    ids.forEach(id => {
+        if (!session.exercises.includes(id)) session.exercises.push(id);
+        if (!session.done.includes(id)) session.done.push(id);
+    });
+    saveSession(k, session);
+    expandedSuggested = null;
+    renderSession();
+}
+
+function markSuggestedDone(id) {
+    const k = getTodayKey();
+    const session = getSession(k);
+    if (!session.done) session.done = [];
+    if (session.done.includes(id)) {
+        session.done = session.done.filter(x => x !== id);
+    } else {
+        session.done.push(id);
+        if (!session.exercises.includes(id)) session.exercises.push(id);
+    }
+    saveSession(k, session);
+    renderSuggestedSession();
+    renderSession();
+}
+
+function toggleSuggested(id) {
+    expandedSuggested = expandedSuggested === id ? null : id;
+    renderSuggestedSession();
+    if (expandedSuggested) {
+        setTimeout(() => {
+            const el = document.querySelector(`[data-sugg-id="${id}"]`);
+            if (el) el.scrollIntoView({ behavior:'smooth', block:'nearest' });
+        }, 60);
+    }
+}
+
+function changeSuggestedStage(id, newIdx) {
+    setStage(id, newIdx);
+    renderSuggestedSession();
+}
+
+function startSuggestedTimer(id) {
+    if (activeTimers[id] && activeTimers[id].interval) return;
+    if (!activeTimers[id]) activeTimers[id] = { seconds: 0 };
+    activeTimers[id].interval = setInterval(() => { activeTimers[id].seconds++; updateTimerDisplay(id); }, 1000);
+    const btn = document.getElementById('sbtn-start-'+id);
+    if (btn) { btn.textContent = t('pause'); btn.onclick = () => pauseSuggestedTimer(id); }
+}
+
+function pauseSuggestedTimer(id) {
+    if (!activeTimers[id]) return;
+    clearInterval(activeTimers[id].interval); activeTimers[id].interval = null;
+    const btn = document.getElementById('sbtn-start-'+id);
+    if (btn) { btn.textContent = t('resume'); btn.onclick = () => startSuggestedTimer(id); }
+}
+
+function resetSuggestedTimer(id) {
+    if (activeTimers[id]) { clearInterval(activeTimers[id].interval); delete activeTimers[id]; }
+    const el = document.getElementById('stimer-'+id); if (el) el.textContent = '0:00';
+    const btn = document.getElementById('sbtn-start-'+id);
+    if (btn) { btn.textContent = t('startTimer'); btn.onclick = () => startSuggestedTimer(id); }
+}
+
+// ==========================================
+//  SESSION PAGE
+// ==========================================
+
+function renderSession() {
+    const k = getTodayKey(); const session = getSession(k);
+    const done = session.done||[]; const exercises = session.exercises||[];
+    const today = new Date();
+    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    document.getElementById('session-date').textContent = `${days[today.getDay()]}, ${months[today.getMonth()]} ${today.getDate()}`;
+    const streak = getStreak();
+    document.getElementById('session-subtitle').textContent = streak>1
+        ? `🔥 ${streak} giorni di fila! Continua così.`
+        : streak===1 ? `✅ Hai praticato oggi. Non spezzare la catena!`
+        : `Nessuna pratica di recente. Inizia oggi.`;
+    document.getElementById('stat-done').textContent = done.length;
+    document.getElementById('stat-streak').textContent = streak;
+    document.getElementById('stat-total').textContent = getTotalSessions();
+    // update stat labels
+    const statLabels = document.querySelectorAll('.stat-label');
+    if (statLabels[0]) statLabels[0].textContent = t('doneToday');
+    if (statLabels[1]) statLabels[1].textContent = t('streak');
+    if (statLabels[2]) statLabels[2].textContent = t('sessions');
+    // update section headings
+    const h3Today = document.getElementById('h3-today-session');
+    if (h3Today) h3Today.textContent = t('todaySession');
+    const h3Quick = document.getElementById('h3-quick-add');
+    if (h3Quick) h3Quick.textContent = t('quickAdd');
+    // render the suggestion block
+    renderSuggestedSession();
+    const all = getAllExercises();
+    const todayEl = document.getElementById('today-list');
+    if (exercises.length===0) {
+        todayEl.innerHTML = `<div class="empty-state" style="padding:20px;"><div class="empty-icon">📋</div>${t('noSession').replace('\n','<br>')}</div>`;
+    } else {
+        todayEl.innerHTML = exercises.map(eid => {
+            const ex = all.find(e=>e.id===eid); if (!ex) return '';
+            const isDone = done.includes(eid);
+            const cat = CATEGORIES.find(c=>c.id===ex.category);
+            return `<div class="session-exercise ${isDone?'done':''}">
+                <div class="checkbox ${isDone?'checked':''}" onclick="toggleDone('${eid}')"></div>
+                <div style="flex:1; min-width:0;">
+                    <div style="font-size:13px; font-weight:500;">${ex.name}</div>
+                    <div style="font-size:11px; color:var(--text-muted);">${cat?cat.icon+' '+cat.name:''} · ${ex.duration||''}</div>
+                </div>
+                <button class="btn xs secondary" onclick="removeFromToday('${eid}')">✕</button>
+            </div>`;
+        }).join('');
+    }
+    const quickAddEl = document.getElementById('quick-add-list');
+    quickAddEl.innerHTML = all.filter(e=>!exercises.includes(e.id)).slice(0,18).map(ex => {
+        const cat = CATEGORIES.find(c=>c.id===ex.category);
+        return `<div style="display:inline-flex; align-items:center; gap:5px; background:var(--card); border:1px solid var(--border); border-radius:7px; padding:6px 10px; font-size:12px; cursor:pointer; transition:background 0.1s;" onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='var(--card)'" onclick="addToToday('${ex.id}')">
+            ${cat?cat.icon:''} ${ex.name}
+        </div>`;
+    }).join('');
+}
+function removeFromToday(eid) {
+    const k = getTodayKey(); const session = getSession(k);
+    session.exercises = session.exercises.filter(id=>id!==eid);
+    session.done = session.done.filter(id=>id!==eid);
+    saveSession(k, session); renderSession();
+}
+
+// ==========================================
+//  PLAN PAGE
+// ==========================================
+
+const PLAN = [
+    { week:1, title:'Foundation — Breath & Posture', focus:'Establishing diaphragmatic breathing as your default. Learning proper breathing posture. Beginning a basic warm-up routine.', exercises:['lip-trill','yawn-sigh','belly-breath','hissing','humming'], goal:'Breathe diaphragmatically on command (standing up) and sustain a hiss for 20+ seconds without collapsing.' },
+    { week:2, title:'Foundation — Knowing Your Registers', focus:'Identifying and consciously accessing chest voice, falsetto, and locating your break. No mixing yet — pure awareness.', exercises:['lip-trill','tongue-trill','chest-sustained','falsetto-hoots','siren'], goal:'Clearly access both chest voice and falsetto intentionally, and know the exact pitch of your break.' },
+    { week:3, title:'Building Support — Appoggio Fundamentals', focus:'Learning the physical sensation of appoggio (sustained inhalation posture). Connecting breath to tone.', exercises:['breath-suspension','appoggio-sensation','rib-expansion','straw-phonation','staccato-support'], goal:'Feel and maintain the appoggio posture for a 5–8 second sustained note without the ribs collapsing.' },
+    { week:4, title:'Chest Voice Development', focus:'Strengthening the chest register, increasing usable chest range, adding volume with support.', exercises:['five-tone-me','chest-call','chest-sustained','staccato-support','appoggio-sensation'], goal:'Sing a five-tone scale in full chest voice on "Nay" with clear support, no throat tension, up to your break.' },
+    { week:5, title:'Falsetto Development', focus:'Building a reliable, freely-produced falsetto — extending upward range, developing stability.', exercises:['falsetto-hoots','falsetto-scales','ng-scale','puppy-whimper','hooty-oo'], goal:'Stable accessible falsetto across 1.5 octaves with consistent tone quality.' },
+    { week:6, title:'Head Voice — Closing the Folds', focus:'Moving from airy falsetto toward connected, supported head voice. Fold closure without pressure.', exercises:['ng-scale','hooty-oo','puppy-whimper','straw-phonation','messa-di-voce'], goal:'Produce at least a few notes in connected head voice (less airy than falsetto, more resonant) with support.' },
+    { week:7, title:'Meeting the Break — Passaggio Intro', focus:'First deliberate attempts at bridging the chest-head break, using cry quality and register control.', exercises:['siren','cry-exercise','falsetto-to-chest','nay-scale','octave-repeat'], goal:'Navigate the passaggio on a siren without a complete flip at least 50% of the time.' },
+    { week:8, title:'Resonance — Placement, Twang & Brightness', focus:'Learning forward placement, twang activation, and mask resonance to increase power without extra effort.', exercises:['twang','ee-vowel','humming','five-tone-me','chest-call'], goal:'Activate twang consciously and hear a clear difference in carrying power.' },
+    { week:9, title:'Mixed Voice — Bridging the Break', focus:'Building the mixed voice blend — carrying chest energy and resonance through the passaggio.', exercises:['nay-scale','gee-octave','cry-exercise','siren','messa-di-voce'], goal:'Sing a "Nay" scale through your passaggio without a noticeable flip on 60–70% of attempts.' },
+    { week:10, title:'Dynamics & Vocal Control', focus:'Deliberate control over volume, dynamics, and tone color while maintaining technique.', exercises:['messa-di-voce','straw-phonation','vowel-modification','appoggio-sensation','siren'], goal:'Crescendo and decrescendo on a sustained note without going flat or sharp at either extreme.' },
+    { week:11, title:'Articulation & Modern Style', focus:'Clear diction, consonant-vowel coordination, applying technique to contemporary singing style.', exercises:['jaw-release','tongue-twisters','consonant-singing','twang','nay-scale'], goal:'Sing a modern song phrase with clear, intelligible consonants and audible support throughout.' },
+    { week:12, title:'Full Integration', focus:'Bringing everything together — full range, dynamics, resonance, support, articulation. Apply to real songs.', exercises:['siren','messa-di-voce','gee-octave','nay-scale','vowel-modification','twang'], goal:'Consistent complete warm-up routine and sing through full range with connection, support, and intention.' },
+];
+
+function renderPlan() {
+    // Update static headings
+    const planPage = document.getElementById('page-plan');
+    if (planPage) {
+        const h2 = planPage.querySelector('h2'); if (h2) h2.textContent = t('progPlan');
+        const ps = planPage.querySelectorAll('p');
+        if (ps[0]) ps[0].textContent = "Un piano strutturato di 12 cicli per costruire una tecnica solida in modo progressivo. Segna un ciclo come completato quando sei a tuo agio con i suoi obiettivi — prenditi tutto il tempo che ti serve.";
+        if (ps[1]) ps[1].textContent = '💡 Tocca una pillola di esercizio per saltare alla libreria.';
+    }
+    const weeksDone = getWeeksDone();
+    let currentWeek = null;
+    for (const w of PLAN) { if (!weeksDone.includes(w.week)) { currentWeek = w.week; break; } }
+    const all = getAllExercises();
+    document.getElementById('plan-weeks').innerHTML = PLAN.map(week => {
+        const isDone = weeksDone.includes(week.week);
+        const isCurrent = week.week === currentWeek;
+        const badgeClass = isDone?'done':(isCurrent?'current':'');
+        const pills = week.exercises.map(eid => {
+            const ex = all.find(e=>e.id===eid);
+            const cat = ex ? CATEGORIES.find(c=>c.id===ex.category) : null;
+            return ex ? `<span class="plan-exercise-pill" onclick="jumpToExercise('${eid}')">${cat?cat.icon:''} ${exT(ex,'name')}</span>` : '';
+        }).join('');
+        const badgeText = isDone?t('weekDone'):(isCurrent?t('youAreHere'):`${t('week')} ${week.week}`);
+        return `<div class="plan-week ${isCurrent?'current-cycle':''}">
+            <div class="plan-week-header" onclick="togglePlanWeek(${week.week})">
+                <span class="week-badge ${badgeClass}">${badgeText}</span>
+                <span class="week-title">${t('week')} ${week.week}: ${planT(week,'title')}</span>
+                <span style="color:var(--text-muted); font-size:14px; margin-left:auto;">▾</span>
+            </div>
+            <div class="plan-week-body ${(isCurrent||isDone)?'open':''}" id="plan-week-${week.week}">
+                <p style="color:var(--text-muted); font-size:13px; margin:12px 0 10px; line-height:1.6;">${planT(week,'focus')}</p>
+                <div style="margin-bottom:12px;">${pills}</div>
+                <div class="tip-box" style="margin-bottom:12px;"><strong>${t('weekGoalLabel')}</strong> ${planT(week,'goal')}</div>
+                <button class="btn ${isDone?'secondary':''} sm" onclick="toggleWeekDone(${week.week}); renderPlan();">${isDone?t('unmarkWeek'):t('markWeekDone')}</button>
+            </div>
+        </div>`;
+    }).join('');
+}
+function togglePlanWeek(n) { const el = document.getElementById('plan-week-'+n); if (el) el.classList.toggle('open'); }
+function jumpToExercise(id) {
+    expandedExercise = id; activeFilter = null;
+    showPage('exercises');
+    setTimeout(() => {
+        const items = document.querySelectorAll('.exercise-item.expanded');
+        if (items.length) items[0].scrollIntoView({ behavior:'smooth', block:'start' });
+    }, 80);
+}
+
+// ==========================================
+//  TIPS PAGE
+// ==========================================
+
+let activeTipsFilter = null;
+
+const IT_CAT_NAMES = {warmup:'Riscaldamento',breathing:'Respirazione',support:'Sostegno e Appoggio',chest:'Registro di Petto',head:'Voce di Testa',falsetto:'Falsetto',mixed:'Voce Mista',resonance:'Risonanza',articulation:'Articolazione'};
+function catName(cat) { return IT_CAT_NAMES[cat.id] || cat.name; }
+
+function renderTipsFilterChips() {
+    const c = document.getElementById('tips-filter-chips');
+    let h = `<div class="chip ${activeTipsFilter===null?'active':''}" onclick="setTipsFilter(null)">Tutti</div>`;
+    CATEGORIES.forEach(cat => {
+        const count = [...builtinTips(), ...getCustomTips()].filter(tp=>tp.cat===cat.id).length;
+        if (count > 0) h += `<div class="chip ${activeTipsFilter===cat.id?'active':''}" onclick="setTipsFilter('${cat.id}')">${cat.icon} ${catName(cat)}</div>`;
+    });
+    c.innerHTML = h;
+}
+function setTipsFilter(id) { activeTipsFilter = id; renderTipsFilterChips(); renderTips(); }
+
+function renderTips() {
+    // Update page headings
+    const tipsPage = document.getElementById('page-tips');
+    if (tipsPage) {
+        const h2 = tipsPage.querySelector('h2');
+        if (h2) h2.textContent = t('quickRef');
+        const p = tipsPage.querySelector('p');
+        if (p) p.textContent = t('scanTips');
+        const addBtn = tipsPage.querySelector('.btn.sm.warning');
+        if (addBtn) addBtn.textContent = t('addMyTip');
+    }
+    const container = document.getElementById('tips-list');
+    const customTips = getCustomTips();
+    const allBuiltin = builtinTips();
+    const allTips = [...allBuiltin.map((tp,i)=>({...tp,id:'built-'+i,custom:false})),
+                     ...customTips.map(tp=>({...tp,custom:true}))];
+    const filtered = activeTipsFilter ? allTips.filter(tp=>tp.cat===activeTipsFilter) : allTips;
+    if (filtered.length === 0) { container.innerHTML = `<div class="empty-state"><div class="empty-icon">💡</div>Nessun consiglio in questa categoria.</div>`; return; }
+
+    let html = '';
+    const cats = activeTipsFilter ? [CATEGORIES.find(c=>c.id===activeTipsFilter)].filter(Boolean) : CATEGORIES;
+    const catNamesIT = {warmup:'Riscaldamento',breathing:'Respirazione',support:'Sostegno e Appoggio',chest:'Registro di Petto',head:'Voce di Testa',falsetto:'Falsetto',mixed:'Voce Mista / Passaggio',resonance:'Risonanza e Posizionamento',articulation:'Articolazione e Dizione'};
+    cats.forEach(cat => {
+        const tips = filtered.filter(tp=>tp.cat===cat.id);
+        if (tips.length === 0) return;
+        const cName = catNamesIT[cat.id] || cat.name;
+        html += `<div class="tips-cat-header"><span>${cat.icon}</span><span>${cName}</span></div>`;
+        tips.forEach(tip => {
+            html += `<div class="tip-card ${tip.custom?'custom-tip':''}">
+                <span class="tip-bullet">${tip.custom?'★':'›'}</span>
+                <span class="tip-text">${tip.text}</span>
+                ${tip.custom ? `<div class="tip-actions"><button class="btn xs secondary" onclick="deleteCustomTip('${tip.id}')">✕</button></div>` : ''}
+            </div>`;
+        });
+    });
+    container.innerHTML = html || `<div class="empty-state"><div class="empty-icon">💡</div>Nessun consiglio trovato.</div>`;
+}
+
+function deleteCustomTip(id) {
+    const tips = getCustomTips().filter(t=>t.id!==id);
+    saveCustomTips(tips);
+    renderTipsFilterChips();
+    renderTips();
+}
+
+// ==========================================
+//  PROGRESS PAGE
+// ==========================================
+
+function renderProgress() {
+    // Update headings
+    const prog = document.getElementById('page-progress');
+    if (prog) {
+        const h2 = prog.querySelector('h2'); if (h2) h2.textContent = t('yourProgress');
+        const h3s = prog.querySelectorAll('h3');
+        if (h3s[0]) h3s[0].textContent = t('last7');
+        if (h3s[1]) h3s[1].textContent = t('sessionHistory');
+    }
+    const sessions = getState().sessions || {};
+    const today = new Date();
+    const dayNames = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
+    let barHtml = '';
+    for (let i=6; i>=0; i--) {
+        const d = new Date(today); d.setDate(d.getDate()-i);
+        const key = d.toISOString().slice(0,10);
+        const practiced = sessions[key] && sessions[key].done && sessions[key].done.length > 0;
+        const count = practiced ? sessions[key].done.length : 0;
+        barHtml += `<div class="streak-day ${practiced?'practiced':''} ${i===0?'today':''}">
+            <div style="font-weight:600;">${dayNames[d.getDay()]}</div>
+            <div>${practiced?count+'✓':'—'}</div>
+        </div>`;
+    }
+    document.getElementById('streak-bar').innerHTML = barHtml;
+    const sortedDates = Object.keys(sessions).sort().reverse();
+    const histEl = document.getElementById('history-list');
+    if (!sortedDates.some(k=>sessions[k].done&&sessions[k].done.length>0)) {
+        histEl.innerHTML = `<div class="empty-state"><div class="empty-icon">📊</div>${t('noHistory')}</div>`; return;
+    }
+    const all = getAllExercises();
+    histEl.innerHTML = sortedDates.map(dateKey => {
+        const s = sessions[dateKey]; const done = s.done||[];
+        if (done.length===0) return '';
+        const d = new Date(dateKey+'T12:00:00');
+        const label = d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+        const pills = done.map(eid => { const ex = all.find(e=>e.id===eid); return ex?`<span class="history-pill">${ex.name}</span>`:''; }).join('');
+        return `<div class="history-entry">
+            <div class="history-date">📅 ${label} · ${done.length} ${t('doneToday2')}</div>
+            <div class="history-pills">${pills}</div>
+        </div>`;
+    }).filter(Boolean).join('');
+}
+
+// ==========================================
+//  MODAL: ADD EXERCISE
+// ==========================================
+
+function openModal(name) {
+    if (name==='add-exercise') { populateAddExerciseForm(); updateModalLabels('add-exercise'); }
+    if (name==='add-tip') { populateAddTipForm(); updateModalLabels('add-tip'); }
+    if (name==='edit-exercise') updateModalLabels('edit-exercise');
+    document.getElementById('modal-'+name).classList.add('open');
+}
+
+function updateModalLabels(name) {
+    const modal = document.getElementById('modal-'+name);
+    if (!modal) return;
+    const title = modal.querySelector('.modal-title');
+    if (name==='add-exercise' && title) title.textContent = t('addExTitle');
+    if (name==='edit-exercise' && title) title.textContent = t('editExTitle');
+    if (name==='add-tip' && title) title.textContent = t('addTipTitle');
+    // Update buttons
+    const btns = modal.querySelectorAll('.btn');
+    btns.forEach(btn => {
+        if (btn.textContent.trim()==='Save exercise'||btn.textContent.trim()==='Salva esercizio') btn.textContent = t('saveExercise');
+        if (btn.textContent.trim()==='Cancel'||btn.textContent.trim()==='Annulla') btn.textContent = t('cancel');
+        if (btn.textContent.trim()==='Delete exercise'||btn.textContent.trim()==='Elimina esercizio') btn.textContent = t('deleteExercise');
+        if (btn.textContent.trim()==='Save changes'||btn.textContent.trim()==='Salva modifiche') btn.textContent = t('saveChanges');
+        if (btn.textContent.trim()==='Save tip'||btn.textContent.trim()==='Salva consiglio') btn.textContent = t('saveTip');
+    });
+}
+function closeModal(name) { document.getElementById('modal-'+name).classList.remove('open'); }
+
+function populateAddExerciseForm() {
+    const sel = document.getElementById('new-ex-cat');
+    sel.innerHTML = CATEGORIES.map(c=>`<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
+    document.getElementById('new-ex-name').value = '';
+    document.getElementById('new-ex-diff').value = '1';
+    document.getElementById('new-ex-duration').value = '';
+    document.getElementById('new-ex-desc').value = '';
+    document.getElementById('new-ex-reps').value = '';
+    document.getElementById('new-ex-tip').value = '';
+    document.getElementById('new-ex-tags').value = '';
+    document.getElementById('new-ex-has-stages').checked = false;
+    document.getElementById('stage-editor').style.display = 'none';
+    document.getElementById('stage-rows').innerHTML = '';
+}
+
+function toggleStageEditor() {
+    const show = document.getElementById('new-ex-has-stages').checked;
+    document.getElementById('stage-editor').style.display = show ? 'block' : 'none';
+    if (show && document.getElementById('stage-rows').children.length===0) addStageRow();
+}
+
+let stageCount = 0;
+function addStageRow() {
+    stageCount++;
+    const n = stageCount;
+    const row = document.createElement('div');
+    row.className = 'stage-row'; row.id = 'stage-row-'+n;
+    row.innerHTML = `<div class="stage-row-num">${document.getElementById('stage-rows').children.length+1}</div>
+        <div class="stage-row-body">
+            <input class="form-input" style="margin-bottom:6px;" placeholder="Stage name (e.g. Beginner / Stage 1)" id="stage-label-${n}" />
+            <input class="form-input" style="margin-bottom:6px;" placeholder="Settings / description (e.g. 4-4-4-4 box)" id="stage-desc-${n}" />
+            <input class="form-input" placeholder="Reps / target for this stage" id="stage-reps-${n}" />
+        </div>
+        <button class="btn xs secondary" style="flex-shrink:0;" onclick="removeStageRow('stage-row-${n}')">✕</button>`;
+    document.getElementById('stage-rows').appendChild(row);
+}
+function removeStageRow(id) { const el = document.getElementById(id); if (el) el.remove(); }
+
+function saveCustomExercise() {
+    const name = document.getElementById('new-ex-name').value.trim();
+    const desc = document.getElementById('new-ex-desc').value.trim();
+    if (!name || !desc) { alert('Please fill in at least the name and description.'); return; }
+    const tags = document.getElementById('new-ex-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
+    const hasStages = document.getElementById('new-ex-has-stages').checked;
+    let stages = null;
+    if (hasStages) {
+        stages = [];
+        document.querySelectorAll('[id^="stage-label-"]').forEach(el => {
+            const n = el.id.split('-').pop();
+            const label = el.value.trim();
+            const desc = (document.getElementById('stage-desc-'+n)||{}).value||'';
+            const reps = (document.getElementById('stage-reps-'+n)||{}).value||'';
+            if (label) stages.push({ label, desc, reps });
+        });
+        if (stages.length===0) stages = null;
+    }
+    const id = 'custom-'+Date.now();
+    const ex = {
+        id, custom:true,
+        name, category: document.getElementById('new-ex-cat').value,
+        difficulty: parseInt(document.getElementById('new-ex-diff').value),
+        duration: document.getElementById('new-ex-duration').value.trim(),
+        desc, reps: document.getElementById('new-ex-reps').value.trim(),
+        tip: document.getElementById('new-ex-tip').value.trim(),
+        tags
+    };
+    if (stages) ex.stages = stages;
+    const all = getCustomExercises(); all.push(ex); saveCustomExercises(all);
+    closeModal('add-exercise');
+    renderFilterChips(); renderExercises(document.getElementById('exercise-search').value.toLowerCase());
+}
+
+// ==========================================
+//  MODAL: EDIT EXERCISE
+// ==========================================
+
+function openEditExercise(id) {
+    const ex = getCustomExercises().find(e=>e.id===id);
+    if (!ex) return;
+    const sel = document.getElementById('edit-ex-cat');
+    sel.innerHTML = CATEGORIES.map(c=>`<option value="${c.id}" ${ex.category===c.id?'selected':''}>${c.icon} ${c.name}</option>`).join('');
+    document.getElementById('edit-ex-id').value = id;
+    document.getElementById('edit-ex-name').value = ex.name||'';
+    document.getElementById('edit-ex-diff').value = ex.difficulty||1;
+    document.getElementById('edit-ex-duration').value = ex.duration||'';
+    document.getElementById('edit-ex-desc').value = ex.desc||'';
+    document.getElementById('edit-ex-reps').value = ex.reps||'';
+    document.getElementById('edit-ex-tip').value = ex.tip||'';
+    document.getElementById('edit-ex-tags').value = (ex.tags||[]).join(', ');
+    openModal('edit-exercise');
+    updateModalLabels('edit-exercise');
+}
+
+function saveEditedExercise() {
+    const id = document.getElementById('edit-ex-id').value;
+    const all = getCustomExercises();
+    const idx = all.findIndex(e=>e.id===id); if (idx===-1) return;
+    all[idx] = { ...all[idx],
+        name: document.getElementById('edit-ex-name').value.trim(),
+        category: document.getElementById('edit-ex-cat').value,
+        difficulty: parseInt(document.getElementById('edit-ex-diff').value),
+        duration: document.getElementById('edit-ex-duration').value.trim(),
+        desc: document.getElementById('edit-ex-desc').value.trim(),
+        reps: document.getElementById('edit-ex-reps').value.trim(),
+        tip: document.getElementById('edit-ex-tip').value.trim(),
+        tags: document.getElementById('edit-ex-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
+    };
+    saveCustomExercises(all);
+    closeModal('edit-exercise');
+    renderFilterChips(); renderExercises(document.getElementById('exercise-search').value.toLowerCase());
+}
+
+function deleteCustomExercise() {
+    const id = document.getElementById('edit-ex-id').value;
+    if (!confirm('Delete this exercise?')) return;
+    saveCustomExercises(getCustomExercises().filter(e=>e.id!==id));
+    closeModal('edit-exercise');
+    renderFilterChips(); renderExercises(document.getElementById('exercise-search').value.toLowerCase());
+}
+
+// ==========================================
+//  MODAL: ADD TIP
+// ==========================================
+
+function populateAddTipForm() {
+    const sel = document.getElementById('new-tip-cat');
+    sel.innerHTML = CATEGORIES.map(c=>`<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
+    document.getElementById('new-tip-text').value = '';
+}
+
+function saveCustomTip() {
+    const text = document.getElementById('new-tip-text').value.trim();
+    if (!text) { alert('Please write a tip.'); return; }
+    const tip = { id:'ctip-'+Date.now(), cat: document.getElementById('new-tip-cat').value, text, custom:true };
+    const all = getCustomTips(); all.push(tip); saveCustomTips(all);
+    closeModal('add-tip');
+    renderTipsFilterChips(); renderTips();
+}
+
+// ==========================================
+//  NAVIGATION
+// ==========================================
+
+function showPage(name) {
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(tb=>tb.classList.remove('active'));
+    document.getElementById('page-'+name).classList.add('active');
+    const order = ['exercises','session','plan','tips','progress'];
+    const tabIds = ['tab-exercises','tab-session','tab-plan','tab-tips','tab-progress'];
+    const idx = order.indexOf(name);
+    const tab = document.getElementById(tabIds[idx]);
+    if (tab) tab.classList.add('active');
+    if (name==='exercises') { renderFilterChips(); renderExercises(); }
+    if (name==='session') renderSession();
+    if (name==='plan') renderPlan();
+    if (name==='tips') { renderTipsFilterChips(); renderTips(); }
+    if (name==='progress') renderProgress();
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => { if (e.target===overlay) overlay.classList.remove('open'); });
+});
+
+// ==========================================
+//  LANGUAGE SYSTEM
+// ==========================================
+
+const T = {
+    exercises:'Esercizi', today:'Oggi', plan:'Piano', tips:'Consigli', progress:'Progressi',
+    addMyExercise:'+ Aggiungi il mio esercizio', addMyTip:'+ Aggiungi il mio consiglio',
+    howTo:'Come eseguirlo', repsTarget:'Ripetizioni / Obiettivo', tipLabel:'💡 Consiglio', personalNotes:'Note personali',
+    startTimer:'▶ Avvia timer', pause:'⏸ Pausa', resume:'▶ Riprendi', reset:'↺ Reset',
+    markDone:'✓ Segna come fatto', unmarkDone:'✗ Rimuovi il segno', addToToday:'+ Aggiungi a oggi', editBtn:'✏️ Modifica',
+    stageOf:'Livello', of:'di', advanceTo:'Passa al Livello', prevStage:'← Precedente', maxStage:'✓ Livello massimo raggiunto!',
+    weekGoal:'Obiettivo:', markWeekDone:'✓ Segna il ciclo come completato', unmarkWeek:'↩ Rimuovi il segno',
+    quickRef:'Consigli Rapidi di Riferimento', scanTips:'Scorri questi prima o durante la pratica per riallineare rapidamente la tua percezione e tecnica.',
+    yourProgress:'I Tuoi Progressi', last7:'Ultimi 7 giorni', sessionHistory:'Storico sessioni',
+    todaySession:'Sessione di oggi', quickAdd:'Aggiungi velocemente un esercizio',
+    doneToday:'Fatti oggi', streak:'Streak 🔥', sessions:'Sessioni',
+    progPlan:'Piano di Allenamento Progressivo', weekGoalLabel:'Obiettivo del ciclo:',
+    noExFound:'Nessun esercizio trovato.\nProva un termine di ricerca o filtro diverso.',
+    noSession:'Nessun esercizio pianificato.\nAggiungine sotto o segna gli esercizi come fatti dalla scheda Esercizi.',
+    noHistory:'Nessuna sessione registrata ancora.',
+    saveExercise:'Salva esercizio', cancel:'Annulla', deleteExercise:'Elimina esercizio', saveChanges:'Salva modifiche',
+    saveTip:'Salva consiglio', deleteTip:'Elimina',
+    addExTitle:'➕ Aggiungi Esercizio Personalizzato', editExTitle:'✏️ Modifica Esercizio', addTipTitle:'➕ Aggiungi Consiglio',
+    exName:'Nome esercizio *', category:'Categoria *', difficulty:'Difficoltà',
+    duration:'Durata / tempo obiettivo', description:'Descrizione (come eseguirlo) *',
+    reps:'Ripetizioni / obiettivo', tip:'Consiglio personale', tags:'Tag (separati da virgola)',
+    hasStages:'Questo esercizio ha livelli progressivi (parametri che cambiano con il progresso)',
+    addStage:'+ Aggiungi livello', stageName:'Nome del livello (es. Principiante / Livello 1)',
+    stageDesc:'Impostazioni / descrizione (es. 4-4-4-4)', stageReps:'Ripetizioni / obiettivo per questo livello',
+    tipCategory:'Categoria', tipText:'Testo del consiglio *',
+    doneToday2:'esercizi completati', youAreHere:'← Sei qui', weekDone:'✓ Fatto', week:'Ciclo',
+    beginner:'Principiante', intermediate:'Intermedio', advanced:'Avanzato',
+    practiced:'praticato', noPractice:'—', custom:'MIO',
+};
+
+function t(key) { return T[key] || key; }
+
+// Exercise translations (name, desc, tip, reps)
+const IT_EX = {
+    'lip-trill': { name:'Lip Roll', desc:"Soffia delicatamente attraverso le labbra socchiuse creando una vibrazione. Mantieni il trillo e scivola su e giù nell'estensione.", tip:"Se le labbra si irrigidiscono, supporta gli angoli con due dita. Massima rilassatezza — l'aria fa il lavoro. Uno dei migliori esercizi SOVT, usato anche dai professionisti.", reps:'5–8 scivolate a tutta estensione, ognuna 5–8 secondi' },
+    'tongue-trill': { name:'Trillo di Lingua (Erre Vibrata)', desc:"Esegui l'erre vibrata italiana/spagnola mentre vocalizzi attraverso la tua estensione. Libera la tensione nella lingua e nella mandibola.", tip:"Non riesci a vibrare la lingua? Usa un rapido 'dr-dr-dr'. Il momento in cui ti irrigidisci, hai perso il punto dell'esercizio.", reps:'5–8 scivolate' },
+    'yawn-sigh': { name:'Sbadiglio-Sospiro', desc:"Fai uno sbadiglio profondo (senti la gola aprirsi completamente), poi lascia uscire un sospiro rilassato dall'alto verso il basso dell'estensione.", tip:"Non cercare di 'cantare' il sospiro — lascialo cadere. Quello spazio aperto in fondo alla gola durante uno sbadiglio? È quello che vuoi mentre canti.", reps:"6–10 sospiri su tutta l'estensione" },
+    'five-tone-me': { name:'Scala di 5 Note su "Mi"', desc:"Canta una scala di cinque note (1-2-3-4-5-4-3-2-1) sulla sillaba brillante 'Mi'. Inizia nel registro centrale confortevole e sali di semitono, poi scendi.", tip:'"Mi" favorisce il posizionamento anteriore e attiva il twang. Dovrebbe risuonare tra gli occhi. Mantienilo leggero salendo.', reps:'Percorri 8–10 tonalità' },
+    'octave-repeat': { name:'Scala di Ottava su "Nay"', desc:"Canta il pattern 1-8-1 su 'Nay' (nasale e brillante). Inizia su una nota bassa comoda, salta un'ottava su, poi torna. Avanza di semitono.", tip:'"Nay" attiva il twang e mantiene la risonanza in avanti. Rivela dove si trova il passaggio salendo.', reps:'Percorri 6–8 tonalità' },
+    'belly-breath': { name:'Respirazione Diaframmatica', desc:"Una mano sul petto, una sulla pancia. Inspira dal naso — solo la mano sulla pancia si solleva. Il petto rimane fermo. Espira lentamente.", tip:"È la base assoluta di tutto nel canto. Praticala ogni giorno fino a quando diventa automatica. La maggior parte dei cantanti non allenati respira con il petto.", reps:'10–15 respiri lenti e consapevoli' },
+    'box-breathing': { name:'Respirazione a Scatola', desc:"Respira seguendo un pattern a scatola: inspira — tieni — espira — tieni. Ogni fase è cronometrata. Costruisce il controllo del respiro e la capacità polmonare per le frasi lunghe.", tip:"La magia sta nella progressione: col migliorare, l'espirazione si allunga mentre l'inspirazione resta uguale. Questo rispecchia il canto: inspirazione breve, espirazione lunga. Non forzare i tempi — avanza solo quando il livello attuale è completamente comodo.", reps:'6–8 cicli a sessione' },
+    'hissing': { name:'Sibilo Sostenuto (Controllo del Fiato)', desc:"Respiro diaframmatico completo. Espira lentamente su un 'ssssss' sostenuto, mantenendo una pressione dell'aria perfettamente uniforme dall'inizio alla fine.", tip:"Senti la pancia che si sgonfia lentamente — non che crolla. La leggera resistenza esterna è l'inizio del sostegno del respiro.", reps:'5–8 sibili — prendi nota del tempo ogni volta' },
+    'panting': { name:'Ansimazione Rapida (Diaframma)', desc:"Bocca aperta, ansima velocemente come un cane — rapide inspirazioni ed espirazioni brevi. Senti il rimbalzo nella pancia.", tip:"Localizza rapidamente il diaframma. Dopo qualche secondo senti il 'rimbalzo' specifico — è il diaframma che lavora. Ricorda questa sensazione.", reps:'3 serie da 15 secondi' },
+    'breath-suspension': { name:'Sospensione del Respiro (Ictus)', desc:"Inspira completamente. Sospendi il respiro — mantieni la posizione 'pronto a cantare' senza chiudere la gola. Tieni 3–5 secondi, poi rilascia.", tip:"La sospensione deve essere nella pancia e nelle costole, non nella gola. La gola rimane aperta. È il gesto che introduce l'appoggio.", reps:'8–10 ripetizioni' },
+    'straw-phonation': { name:'Fonazione con la Cannuccia (SOVT)', desc:"Canta attraverso una cannuccia stretta. Canta scale, scivolate, pattern melodici nella cannuccia. La resistenza ri-bilancia la pressione del flusso d'aria e delle corde.", tip:"Uno degli esercizi vocali più validati clinicamente. La contropressione riduce la tensione e incoraggia la chiusura efficiente delle corde. Senti la vibrazione nelle labbra.", reps:'5 minuti continui — scale, scivolate, ronzio' },
+    'appoggio-sensation': { name:"Trovare l'Appoggio", desc:"Inspira profondamente — pancia e costole si espandono. Mentre espiri su una 's', resisti attivamente al crollo: mantieni quella sensazione di espansione il più a lungo possibile. Quella resistenza muscolare È l'appoggio.", tip:"L'appoggio non riguarda il spingere la pancia in dentro o in fuori. Riguarda il mantenere la postura dell'inspirazione mentre canti. Pensa: RIMANI APERTO. Non lasciare cadere le costole.", reps:'8–10 volte — concentrati sulla sensazione' },
+    'staccato-support': { name:'Staccato su "Ah" (Impulso Addominale)', desc:"Canta note staccate corte e nette su 'Ah' salendo una scala di cinque note. Ogni 'Ah' deve originare da un piccolo impulso addominale — non dalla chiusura della gola.", tip:"Metti la mano sulla pancia. Ogni 'Ah' = piccola contrazione addominale. Attacco duro = gola. Attacco pulito e leggero = supporto.", reps:'5–8 scale ascendenti e discendenti' },
+    'messa-di-voce': { name:'Messa di Voce', desc:"Tieni una nota. Inizia pianissimo (appena udibile), crescendo lentamente fino a forte, poi decrescendo di nuovo a pianissimo. L'intonazione deve rimanere perfettamente stabile.", tip:"Uno degli esercizi supremi del canto classico. Calare nel pianissimo = supporto insufficiente. Salire nel forte = eccessiva pressione.", reps:'5–8 note su intonazioni diverse' },
+    'rib-expansion': { name:'Espansione Laterale delle Costole', desc:"Metti le mani sui fianchi, all'altezza delle costole inferiori (le 'costole galleggianti' — le ultime due paia, che non si collegano allo sterno e si espandono liberamente verso i lati). Inspira profondamente e spingi attivamente le costole verso le mani. Mantieni questa espansione aperta mentre canti una nota sostenuta: non lasciare cedere le costole.", tip:"La maggior parte dei cantanti respira solo in avanti, gonfiando il petto. L'espansione laterale aumenta la capacità polmonare e crea una base di sostegno molto più stabile — è qui che si sente l'appoggio.", reps:'8 ripetizioni con nota sostenuta' },
+    'chest-call': { name:'Belting / Pattern del "Grido"', desc:"Su una scala di cinque note, canta con un suono forte e in avanti come se stessi chiamando qualcuno dall'altra parte della stanza. Usa sillabe come 'Ei!' o 'Nay!'. Rimani nel registro di petto.", tip:"La potenza viene dal sostegno, non dalla gola. Se senti tensione o affaticamento, sei troppo in alto o manca il sostegno.", reps:'6–8 scale nel range confortevole di petto' },
+    'chest-sustained': { name:'"Ah" Sostenuto nel Registro di Petto', desc:"Canta un 'Ah' aperto e sostenuto su note confortevoli nel registro di petto. Concentrati su un suono pieno, caldo, risonante senza spingere.", tip:"Un suono di petto ben prodotto si sente caldo dietro lo sterno. Evita di portare il registro di petto troppo in alto.", reps:'8–10 note — nota dove diventa teso' },
+    'hooty-oo': { name:'"U" nel Registro di Testa', desc:"Nel registro superiore, canta una 'U' morbida, rotonda, come un gufo. Qualità aperta e facile — nessuna pressione. Scivola gradualmente su verso l'alto da una nota centrale.", tip:"Pensa al gufo: 'Uuuuu'. Il retro della gola deve essere aperto come l'inizio di uno sbadiglio. Nessuna spinta — la 'U' assottiglia e chiude delicatamente le corde.", reps:'6–8 note sostenute o scivolate nel registro superiore' },
+    'puppy-whimper': { name:'Piagnucolio del Cucciolo', desc:"Imita un cucciolo che piagnucola. Usa la sillaba 'Nghi' (la 'ng' finale di 'sing' + 'i') oppure un semplice 'Ii-ii-ii' acuto e nasale in falsetto. Lascia che scivoli liberamente verso l'alto senza controllarlo. Deve suonare lamentoso, quasi infantile.", tip:"Deve sembrare imbarazzantemente facile — quasi sciocco. Quella facilità È l'esercizio: la postura laringea alta e rilassata che si attiva automaticamente con quel suono è esattamente ciò che serve per accedere al registro superiore senza sforzo. Non cercare di suonare bene.", reps:'5–8 scivolate verso il registro superiore' },
+    'ng-scale': { name:'Scala "Ng" nel Registro di Testa', desc:"Canta una scala di cinque note sul suono 'Ng' (la fine di 'sing'). Questo suono SOVT accede automaticamente al registro di testa e al posizionamento anteriore.", tip:'"Ng" = retro della lingua al palato molle. Riduce l\'aria in eccesso e favorisce la risonanza di testa. Diventa più facile salendo.', reps:'8–10 scale ascendenti e discendenti' },
+    'falsetto-hoots': { name:'Note in Falsetto', desc:"In puro falsetto — leggero, aereo — canta note brevi sostenute su 'U'. Lascia che sia liberamente aereo.", tip:"Sviluppa un falsetto forte e affidabile. È la base per la voce di testa e la voce mista. Non giudicare il suono.", reps:'8–12 note nel registro superiore' },
+    'falsetto-scales': { name:'Scale Leggere in Falsetto', desc:"Scala di cinque note interamente in falsetto. Leggero e aereo. Sale poi scende. Nota dove diventa instabile scendendo.", tip:"Scendere in falsetto è molto più difficile che salire. Il punto di instabilità scendendo è il tuo 'break' dal basso — traccialo nel tempo.", reps:'6–8 scale' },
+    'falsetto-to-chest': { name:'Salti Falsetto ↔ Petto', desc:"Su un'unica intonazione, alterna deliberatamente: 'U (falsetto) — Ei (petto) — U — Ei'. Scambio consapevole e deliberato del registro.", tip:"Questo rende la differenza inconfondibilmente chiara e allena il controllo conscio del registro — il primo passo cruciale verso la miscelazione.", reps:'6–8 ripetizioni su 3–4 intonazioni intorno al passaggio' },
+    'siren': { name:'Sirena a Tutta Estensione', desc:"Scorri senza interruzioni dal fondo al tetto dell'estensione e viceversa — come una sirena dei pompieri. Usa 'i' o 'u'. Cerca di non 'flippare'.", tip:"Il tuo strumento diagnostico principale. Ascolta ogni sessione: stesso punto di flip? Sezione superiore aerea o connessa? Non forzare — osserva. Col tempo la sirena si ammorbidisce.", reps:'6–8 scivolate a tutta estensione' },
+    'cry-exercise': { name:'Pianto/Lamento su "Uì"', desc:"Con una qualità leggermente piagnucolosa, canta una scala di cinque note o un salto di ottava su 'Uì'. Abbraccia la qualità poco dignitosa.", tip:"Il pianto attiva una postura laringea specifica che permette ai registri di fondersi attraverso il passaggio. Sembra sciocco, funziona brillantemente.", reps:'6–8 pattern attraverso il passaggio' },
+    'nay-scale': { name:'Scala "Nay" attraverso il Passaggio', desc:"Canta 'Nay Nay Nay Nay Nay' su una scala di cinque note, spingendo attraverso il passaggio con energia di petto. Il twang ti porta più in alto.", tip:'"Nay" aggiunge twang (massa alle corde) che aiuta a colmare il divario. Vai nelle tonalità dove la voce vuole flippare — e combatti il flip.', reps:'8–10 scale attraverso e oltre il passaggio' },
+    'gee-octave': { name:'Salto di Ottava su "Gi"', desc:"Canta 1-8-1 su 'Gi'. La consonante 'G' aiuta la chiusura efficiente delle corde; la 'i' favorisce il posizionamento anteriore.", tip:"Forza la voce a navigare il passaggio in un solo movimento. Se flippa sul la nota alta — benissimo, sei nel range giusto. Nel tempo, l'obiettivo è mantenere il mix di petto sulla nota alta.", reps:'6–8 salti ascendenti di semitono' },
+    'humming': { name:'Ronzio Sostenuto', desc:"Ronza su 'mmm' con le labbra leggermente a contatto. Senti la vibrazione nelle labbra, guance, fronte. Scivola su e giù nell'estensione.", tip:"Più vibrazione nel petto che nel viso = risonanza troppo bassa. Porta il ronzio in avanti — immagina il suono che rimbalza sui denti anteriori.", reps:'4–5 minuti continui' },
+    'ee-vowel': { name:'Posizionamento Anteriore su "I"', desc:"Note sostenute su 'I' su intonazioni confortevoli. Concentrati su DOVE senti la risonanza — punta alla maschera (zigomi, ponte del naso).", tip:'"I" è la vocale più naturalmente posizionata in avanti. Trovala qui, poi porta quella stessa sensazione su "Ah" e "O".', reps:'8–10 note attraverso l\'estensione' },
+    'vowel-modification': { name:'Modificazione Vocalica', desc:"Canta una scala su 'Ah'. Salendo, modifica progressivamente: Ah → A (come in 'panda') → O. Permetti la modifica sulle note alte — non mantenere una pura 'Ah'.", tip:"Sulle note alte, una pura 'Ah' crea tensione acustica. La modifica spesso rende le note alte PIÙ FACILI. Rendila consapevole.", reps:'5–8 scale — attenzione al punto di modifica' },
+    'twang': { name:'Attivazione del Twang — "Qua"', desc:"Imita un'anatra: 'Qua qua qua!' con il massimo twang nasale e ronzante. Esagera completamente. Poi riduci gradualmente mantenendo la brillantezza.", tip:"Il twang può quasi raddoppiare il volume senza sforzo aggiuntivo. Il verso dell'anatra è l'estremo — un twang controllato al 20–30% dà un suono brillante e portante.", reps:'10–12 verso esagerati, poi 5–6 scale con twang moderato' },
+    'tongue-twisters': { name:'Scioglilingua', desc:"Parla poi canta scioglilingua italiani: 'Trentatré trentini', 'Sopra la panca la capra campa', 'Tigre contro tigre'. Prima lento, poi veloce.", tip:"Le consonanti = nitide e rilasciate subito. La vocale porta il suono. Non agganciare le consonanti — rilasciale nella vocale.", reps:'5–8 round alternando parlato e cantato' },
+    'jaw-release': { name:'Rilassamento della Mandibola', desc:"Massaggia i muscoli masseteri (angoli della mascella). Lascia cadere la mandibola con la gravità — non forzarla. Canta una 'Ya' sostenuta con mandibola rilasciata.", tip:"La tensione della mandibola è uno dei problemi più comuni nei cantanti maschi. Cade con la gravità, non viene forzata. Lasciala essere pesante.", reps:'1–2 min massaggio, poi 5–8 note su "Ya"' },
+    'consonant-singing': { name:'Chiarezza Consonante-Vocale', desc:"Scale di cinque note su: 'Ba Ba Ba', 'Da Da Da', 'La La La', 'Ma Ma Ma'. Consonante netta → vocale immediatamente piena e aperta.", tip:"Consonante nitida, vocale piena sostenuta. Evita di inghiottire le consonanti o di interrompere il legato.", reps:'4–6 scale per sillaba' },
+};
+
+// Italian stage translations for staged exercises
+const IT_STAGES = {
+    'box-breathing': [
+        { label:'Livello 1 — Scatola Uguale', desc:'Inspira 4s · Tieni 4s · Espira 4s · Tieni 4s', reps:'6 cicli — respiro uniforme su tutti e quattro i lati. Pancia espansa durante la pausa dopo l\'espirazione.' },
+        { label:'Livello 2 — Espirazione Estesa', desc:'Inspira 4s · Tieni 4s · Espira 6s · Tieni 4s', reps:"6 cicli — l'espirazione si allunga: inizia a gestire l'aria più lentamente. Il cantante espira sempre più a lungo di quanto inspira." },
+        { label:'Livello 3 — Frase Breve', desc:'Inspira 4s · Tieni 4s · Espira 8s · Tieni 3s', reps:'6 cicli — la pausa dopo l\'espirazione si accorcia leggermente: nel canto si re-inspira spesso senza pausa lunga.' },
+        { label:'Livello 4 — Controllo del Cantante', desc:'Inspira 4s · Tieni 4s · Espira 10s · Tieni 2s', reps:'6 cicli — simula frasi melodiche di media lunghezza. La pausa post-espirazione è minima: re-inspirazione pronta.' },
+        { label:'Livello 5 — Frase Lunga', desc:'Inspira 4s · Tieni 4s · Espira 12s · Tieni 2s', reps:'6 cicli — controllo avanzato. Mantieni la pressione uniforme fino all\'ultima frazione di secondo. Nessuna accelerazione sul finale.' },
+    ],
+    'hissing': [
+        { label:'Livello 1 — Fondamenta', desc:'Obiettivo: 15 secondi per sibilo', reps:"5 sibili — concentrati sull'uniformità del flusso d'aria" },
+        { label:'Livello 2 — Sviluppo', desc:'Obiettivo: 20 secondi per sibilo', reps:'6 sibili — senti la pancia che resiste al crollo' },
+        { label:'Livello 3 — Intermedio', desc:'Obiettivo: 25–30 secondi per sibilo', reps:'6 sibili — piena consapevolezza del sostegno' },
+        { label:'Livello 4 — Avanzato', desc:'Obiettivo: 35–45 secondi per sibilo', reps:'6 sibili — questo è controllo del respiro professionale' },
+    ],
+};
+
+// Italian plan translations
+const IT_PLAN = [
+    { title:'Fondamenta — Respiro e Postura', focus:"Stabilire la respirazione diaframmatica come predefinita. Apprendere la postura corretta. Iniziare una routine di riscaldamento di base.", goal:"Respirare diaframmaticamente su richiesta (in piedi) e sostenere un sibilo per 20+ secondi senza cedere." },
+    { title:'Fondamenta — Conoscere i Registri', focus:"Identificare e accedere consapevolmente al registro di petto, al falsetto, e localizzare il passaggio. Nessuna miscelazione ancora — pura consapevolezza.", goal:"Accedere chiaramente e intenzionalmente sia al registro di petto che al falsetto, e conoscere l'intonazione esatta del passaggio." },
+    { title:'Costruire il Sostegno — Fondamenta dell\'Appoggio', focus:"Apprendere la sensazione fisica dell'appoggio (postura di inspirazione sostenuta). Collegare il respiro al suono.", goal:"Sentire e mantenere la postura dell'appoggio per una nota sostenuta di 5–8 secondi senza che le costole cedano." },
+    { title:'Sviluppo del Registro di Petto', focus:"Rafforzare il registro di petto, aumentare l'estensione utilizzabile, aggiungere volume con il sostegno.", goal:"Cantare una scala di cinque note in pieno registro di petto su 'Nay' con sostegno chiaro e senza tensione alla gola." },
+    { title:'Sviluppo del Falsetto', focus:"Costruire un falsetto affidabile e libero — estendere l'estensione verso l'alto, sviluppare stabilità.", goal:"Falsetto stabile e accessibile su 1,5 ottave con qualità sonora consistente." },
+    { title:'Voce di Testa — Chiudere le Corde', focus:"Passare da un falsetto aereo verso una voce di testa più connessa e sostenuta. Chiusura delle corde senza pressione.", goal:"Produrre almeno alcune note in voce di testa connessa (meno aerea del falsetto, più risonante) con sostegno." },
+    { title:'Incontrare il Passaggio — Introduzione', focus:"Primi tentativi deliberati di collegare il passaggio petto-testa, usando qualità di pianto e controllo del registro.", goal:"Navigare il passaggio con la sirena senza un flip completo almeno il 50% delle volte." },
+    { title:'Risonanza — Posizionamento, Twang e Brillantezza', focus:"Apprendere il posizionamento anteriore, l'attivazione del twang e la risonanza nella maschera per aumentare la potenza senza sforzo.", goal:"Attivare il twang consapevolmente e sentire una chiara differenza nella potenza di proiezione." },
+    { title:'Voce Mista — Collegare il Passaggio', focus:"Costruire la miscela della voce mista — portare l'energia di petto attraverso il passaggio.", goal:"Cantare una scala 'Nay' attraverso il passaggio senza un flip evidente nel 60–70% dei tentativi." },
+    { title:'Dinamiche e Controllo Vocale', focus:"Controllo deliberato del volume, delle dinamiche e del colore del suono mantenendo la tecnica.", goal:"Fare un crescendo e un decrescendo su una nota sostenuta senza andare piatto o acuto agli estremi." },
+    { title:'Articolazione e Stile Moderno', focus:"Dizione chiara, coordinazione consonante-vocale, applicare la tecnica allo stile canoro contemporaneo.", goal:"Cantare una frase di una canzone moderna con consonanti chiare e sostegno udibile per tutta la durata." },
+    { title:'Integrazione Completa', focus:"Unire tutto — estensione completa, dinamiche, risonanza, sostegno, articolazione. Applicare a canzoni reali.", goal:"Routine di riscaldamento completa e consistente, capace di cantare su tutta l'estensione con connessione, sostegno e intenzione." },
+];
+
+// Italian built-in tips
+const IT_TIPS = [
+    { cat:'breathing', text:"Prima di cantare una frase, non 'afferrare' l'aria — lasciala cadere dentro con la pancia bassa e aperta." },
+    { cat:'breathing', text:"Inspira come se stessi annusando un fiore — lento, silenzioso, dal naso. Le inspirazioni udibili creano tensione." },
+    { cat:'breathing', text:"Non lasciare mai sollevare le spalle quando inspiri. È respirazione toracica e taglia il sostegno." },
+    { cat:'breathing', text:"Pensa 'fuori e in basso' per la pancia sull'inspirazione — non 'dentro e in su'." },
+    { cat:'breathing', text:"Un respiro completo richiede solo 1–2 secondi. Inspirazione breve e silenziosa, espirazione lunga e controllata." },
+    { cat:'support', text:"Immagina di stare per sollevare qualcosa di pesante — quella sensazione nel core è il tuo sostegno." },
+    { cat:'support', text:"Le costole devono rimanere espanse anche mentre espiri. Quella resistenza È il sostegno." },
+    { cat:'support', text:"Pensa di cantare su una colonna d'aria — come cavalcare un ascensore verso l'alto con l'aria, non combatterla." },
+    { cat:'support', text:"Se finisci l'aria prima della fine della frase, il sostegno è crollato troppo presto — tieni le costole aperte." },
+    { cat:'support', text:"Il sostegno viene dall'addome basso e dalle costole, mai dalla pressione sulla gola." },
+    { cat:'articulation', text:"Lascia cadere la mandibola con la gravità, non forzarla ad aprirsi. Lasciala essere pesante." },
+    { cat:'articulation', text:"Massaggia il muscolo massetere (davanti all'orecchio) per 30 secondi prima di cantare." },
+    { cat:'articulation', text:"La punta della lingua deve sempre toccare i denti anteriori inferiori. Lingua contratta = tensione." },
+    { cat:'articulation', text:"Se senti tensione alla gola, sbadiglia una volta — reimposta la posizione laringea." },
+    { cat:'articulation', text:"Controlla il collo: è in avanti? Tiralo leggermente indietro — senti lo spazio nella gola aprirsi." },
+    { cat:'resonance', text:"La risonanza deve essere nel viso, non nel petto. In avanti! Immagina il suono che rimbalza sugli zigomi." },
+    { cat:'resonance', text:"Canta verso la parete del fondo — lascia che il suono viaggi lontano, non solo di fronte a te." },
+    { cat:'resonance', text:"Un leggero sorriso illumina il timbro. Mandibola scura + sorriso luminoso = il classico obiettivo di risonanza." },
+    { cat:'resonance', text:"Pensa al suono che rimbalza sul palato duro (tetto della bocca) — in avanti, non all'indietro." },
+    { cat:'resonance', text:"Se la voce suona opaca, aggiungi il 20% di twang. Se suona dura, riducilo." },
+    { cat:'head', text:"Pensa 'su e oltre' — come lanciare il suono sopra la tua testa verso lontano." },
+    { cat:'head', text:"Un suono da gufo ('Uuuuu') accede immediatamente al registro di testa senza tensione." },
+    { cat:'head', text:"Immagina la voce che esce dalla sommità della testa, non dalla bocca, sulle note alte." },
+    { cat:'head', text:"La voce di testa deve sembrare senza sforzo. Se richiede sforzo, stai ancora usando la memoria muscolare del petto." },
+    { cat:'falsetto', text:"Il falsetto deve sembrare aria che passa liberamente — quasi nessuna sensazione fisica." },
+    { cat:'falsetto', text:"Se il falsetto si incrina scendendo, lì si trova il tuo passaggio attuale. Annota l'intonazione." },
+    { cat:'falsetto', text:"Non evitare il falsetto perché suona debole. Svilupparlo è essenziale per la voce di testa e la voce mista." },
+    { cat:'mixed', text:"Non forzare attraverso il passaggio — ammorbidisciti dentro di esso, come una leggera pressione piuttosto che una spinta." },
+    { cat:'mixed', text:"Una leggera qualità di pianto aiuta automaticamente a navigare il passaggio. Poco dignitoso ma efficace." },
+    { cat:'mixed', text:"Non pensare 'più in alto' — pensa 'più in avanti' mentre sali attraverso il passaggio." },
+    { cat:'mixed', text:"Il passaggio non è un ostacolo — è una zona di transizione. Allenalo ripetutamente e si ammorbidirà." },
+    { cat:'chest', text:"La potenza del registro di petto viene dal sostegno, non dalla pressione alla gola." },
+    { cat:'chest', text:"Un suono di petto libero dovrebbe sembrare che riempia la stanza senza sforzo. Se stai forzando, scendi." },
+    { cat:'chest', text:"Il 'soffitto' del registro di petto sale nel tempo con il miglioramento della tecnica. Non forzarlo." },
+    { cat:'warmup', text:"Riscaldati sempre prima di praticare — le corde vocali fredde sono come i muscoli freddi. Minimo 5–10 minuti." },
+    { cat:'warmup', text:"Se la voce è stanca, fai solo SOVT delicati (cannuccia, trillo delle labbra). Nessun lavoro a piena voce quando sei affaticato." },
+    { cat:'warmup', text:"Un buon riscaldamento inizia piano e in basso, espande gradualmente l'estensione e il volume. Non forzare mai le note alte a freddo." },
+];
+
+// Helper: get exercise field (Italian always)
+function exT(ex, field) {
+    return (IT_EX[ex.id] && IT_EX[ex.id][field]) ? IT_EX[ex.id][field] : (ex[field] || '');
+}
+function exStages(ex) {
+    return IT_STAGES[ex.id] || ex.stages || null;
+}
+function planT(week, field) {
+    return (IT_PLAN[week.week-1] && IT_PLAN[week.week-1][field]) ? IT_PLAN[week.week-1][field] : (week[field] || '');
+}
+function builtinTips() {
+    return IT_TIPS;
+}
+
+// ==========================================
+//  INIT
+// ==========================================
+renderSession();
+</script>
+</body>
+</html>
