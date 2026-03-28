@@ -49,8 +49,8 @@
         .detail-text { font-size: 13px; line-height: 1.65; color: var(--text); }
         .detail-section { margin-bottom: 12px; }
         .tip-box { background: rgba(124,92,191,0.12); border-left: 3px solid var(--accent); padding: 10px 14px; border-radius: 0 6px 6px 0; font-size: 13px; line-height: 1.6; }
-        .yt-link { display: inline-flex; align-items: center; gap: 5px; color: #ff4444; font-size: 12px; font-weight: 500; text-decoration: none; background: rgba(255,68,68,0.1); border: 1px solid rgba(255,68,68,0.25); border-radius: 6px; padding: 4px 10px; transition: background 0.15s; }
-        .yt-link:hover { background: rgba(255,68,68,0.2); }
+        .yt-link { display: inline-flex; align-items: center; gap: 5px; color: #c07070; font-size: 12px; font-weight: 400; text-decoration: none; transition: color 0.15s; }
+        .yt-link:hover { color: #ff4444; }
 
         /* STAGE WIDGET */
         .stage-widget { background: rgba(240,160,80,0.1); border: 1px solid rgba(240,160,80,0.3); border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; }
@@ -77,7 +77,8 @@
         .custom-badge { background: var(--warning); color: #111; font-size: 10px; padding: 2px 7px; border-radius: 99px; font-weight: 700; white-space: nowrap; }
 
         /* TIMER */
-        .timer-display { font-size: 28px; font-weight: 700; font-family: monospace; color: var(--accent-light); text-align: center; padding: 6px 0; }
+        .timer-display { font-size: 28px; font-weight: 700; font-family: monospace; color: var(--accent-light); text-align: center; padding: 6px 0; transition: color 0.4s; }
+        .timer-display.timer-done { color: var(--success); }
         .timer-controls { display: flex; gap: 8px; justify-content: center; margin-top: 6px; }
 
         /* FORMS */
@@ -192,6 +193,10 @@
         .suggestion-ex-expand { font-size:10px; color:var(--text-muted); }
         .suggestion-ex-detail { border-top:1px solid var(--border); padding:14px 12px 10px; }
         .next-badge { font-size:11px; font-weight:400; color:var(--accent-light); white-space:nowrap; }
+        .quick-note-wrap { border-top:1px solid var(--border); padding:8px 12px 10px; }
+        .quick-note-input { width:100%; background:transparent; border:none; border-bottom:1px solid var(--border); border-radius:0; padding:4px 0; font-size:12px; color:var(--text); outline:none; resize:none; font-family:inherit; line-height:1.5; }
+        .quick-note-input::placeholder { color:var(--text-muted); }
+        .quick-note-input:focus { border-bottom-color:var(--accent-light); }
         /* done-exercises section */
         .done-section { margin-top:20px; }
         .done-section-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-muted); margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid var(--border); }
@@ -735,9 +740,28 @@ function getAllExercises() {
 // ==========================================
 
 const activeTimers = {};
+function playCompletionSound() {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.setValueAtTime(523, ctx.currentTime);
+        osc.frequency.setValueAtTime(659, ctx.currentTime + 0.15);
+        osc.frequency.setValueAtTime(784, ctx.currentTime + 0.3);
+        gain.gain.setValueAtTime(0.25, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.9);
+        osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.9);
+    } catch(e) {}
+}
+
 function startTimer(id) {
     if (activeTimers[id] && activeTimers[id].interval) return;
-    if (!activeTimers[id]) activeTimers[id] = { seconds: 0 };
+    if (!activeTimers[id]) {
+        const ex = getAllExercises().find(e => e.id === id);
+        const targetSeconds = ex ? parseDuration(ex.duration) * 60 : null;
+        activeTimers[id] = { seconds: 0, targetSeconds };
+    }
     activeTimers[id].interval = setInterval(() => { activeTimers[id].seconds++; updateTimerDisplay(id); }, 1000);
     const btn = document.getElementById('btn-start-'+id);
     if (btn) { btn.textContent = '⏸ Pause'; btn.onclick = () => pauseTimer(id); }
@@ -750,15 +774,21 @@ function pauseTimer(id) {
 }
 function resetTimer(id) {
     if (activeTimers[id]) { clearInterval(activeTimers[id].interval); delete activeTimers[id]; }
-    const el = document.getElementById('timer-'+id); if (el) el.textContent = '0:00';
+    const el = document.getElementById('timer-'+id);
+    if (el) { el.textContent = '0:00'; el.classList.remove('timer-done'); }
     const btn = document.getElementById('btn-start-'+id);
     if (btn) { btn.textContent = '▶ Start timer'; btn.onclick = () => startTimer(id); }
 }
 function updateTimerDisplay(id) {
     const s = activeTimers[id].seconds;
+    const target = activeTimers[id].targetSeconds;
     const txt = Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
-    const el = document.getElementById('timer-'+id); if (el) el.textContent = txt;
-    const sel = document.getElementById('stimer-'+id); if (sel) sel.textContent = txt;
+    const done = target && s >= target;
+    const el = document.getElementById('timer-'+id);
+    if (el) { el.textContent = txt; el.classList.toggle('timer-done', done); }
+    const sel = document.getElementById('stimer-'+id);
+    if (sel) { sel.textContent = txt; sel.classList.toggle('timer-done', done); }
+    if (target && s === target) playCompletionSound();
 }
 
 // ==========================================
@@ -812,6 +842,7 @@ function getYoutubeUrl(exId) {
 
 let expandedExercise = null;
 let expandedSuggested = null;
+let pendingNoteId = null;
 let activeFilter = null;
 
 function renderFilterChips() {
@@ -883,7 +914,7 @@ function renderExercises(filter='') {
                     </div>` : `
                     <div class="detail-section"><div class="detail-label">${t('repsTarget')}</div><div class="detail-text">${exT(ex,'reps')}</div></div>`}
                     ${(ex.tip||IT_EX[ex.id]?.tip) ? `<div class="detail-section"><div class="detail-label">${t('tipLabel')}</div><div class="tip-box">${exT(ex,'tip')}</div></div>` : ''}
-                    ${getYoutubeUrl(ex.id) ? `<div class="detail-section"><a class="yt-link" href="${getYoutubeUrl(ex.id)}" target="_blank" rel="noopener">▶ Guarda esempio su YouTube</a></div>` : ''}
+                    ${getYoutubeUrl(ex.id) ? `<div class="detail-section"><a class="yt-link" href="${getYoutubeUrl(ex.id)}" target="_blank" rel="noopener">Guarda esempio su YouTube</a></div>` : ''}
                     <div class="detail-section">
                         <div class="detail-label">Timer</div>
                         <div class="timer-display" id="timer-${ex.id}">0:00</div>
@@ -1109,7 +1140,7 @@ function renderSuggestedSession() {
                 </div>` : `
                 <div class="detail-section"><div class="detail-label">${t('repsTarget')}</div><div class="detail-text">${exT(ex,'reps')}</div></div>`}
                 ${(ex.tip||IT_EX[ex.id]?.tip) ? `<div class="detail-section"><div class="detail-label">${t('tipLabel')}</div><div class="tip-box">${exT(ex,'tip')}</div></div>` : ''}
-                ${getYoutubeUrl(ex.id) ? `<div class="detail-section"><a class="yt-link" href="${getYoutubeUrl(ex.id)}" target="_blank" rel="noopener">▶ Guarda esempio su YouTube</a></div>` : ''}
+                ${getYoutubeUrl(ex.id) ? `<div class="detail-section"><a class="yt-link" href="${getYoutubeUrl(ex.id)}" target="_blank" rel="noopener">Guarda esempio su YouTube</a></div>` : ''}
                 <div class="detail-section">
                     <div class="detail-label">Timer</div>
                     <div class="timer-display" id="stimer-${ex.id}">0:00</div>
@@ -1134,10 +1165,18 @@ function renderSuggestedSession() {
                 <div class="suggestion-ex-name">${exT(ex,'name')}${isNext && !isDoneToday ? ` <span class="next-badge">[prossimo]</span>` : ''}</div>
                 <span class="suggestion-ex-meta">${dur} min</span>
                 ${badge}
-                <span class="suggestion-ex-expand">${isExpanded?'▲':'▼'}</span>
+                ${!isDoneToday ? `<span class="suggestion-ex-expand">${isExpanded?'▲':'▼'}</span>` : ''}
                 <button class="btn xs ${isDoneToday?'success':'secondary'}" onclick="event.stopPropagation(); markSuggestedDone('${id}')">${isDoneToday?'✓':'✓ Fatto'}</button>
             </div>
             ${detail}
+            ${isDoneToday && pendingNoteId === id ? `
+            <div class="quick-note-wrap" onclick="event.stopPropagation()">
+                <textarea class="quick-note-input" id="quick-note-${id}" rows="1"
+                    placeholder="Come è andata? (opzionale)"
+                    onblur="saveQuickNote('${id}', this.value)"
+                    onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.blur();}"
+                >${getNotes(id)}</textarea>
+            </div>` : ''}
         </div>`;
     }
 
@@ -1215,13 +1254,28 @@ function markSuggestedDone(id) {
     if (!session.done) session.done = [];
     if (session.done.includes(id)) {
         session.done = session.done.filter(x => x !== id);
+        pendingNoteId = null;
     } else {
         session.done.push(id);
         if (!session.exercises.includes(id)) session.exercises.push(id);
+        expandedSuggested = null;
+        pendingNoteId = id;
     }
     saveSession(k, session);
     renderSuggestedSession();
     renderSession();
+    if (pendingNoteId) {
+        setTimeout(() => {
+            const input = document.getElementById('quick-note-' + pendingNoteId);
+            if (input) input.focus();
+        }, 60);
+    }
+}
+
+function saveQuickNote(id, value) {
+    if (value.trim()) saveNotes(id, value.trim());
+    pendingNoteId = null;
+    renderSuggestedSession();
 }
 
 function toggleSuggested(id) {
@@ -1242,7 +1296,11 @@ function changeSuggestedStage(id, newIdx) {
 
 function startSuggestedTimer(id) {
     if (activeTimers[id] && activeTimers[id].interval) return;
-    if (!activeTimers[id]) activeTimers[id] = { seconds: 0 };
+    if (!activeTimers[id]) {
+        const ex = getAllExercises().find(e => e.id === id);
+        const targetSeconds = ex ? parseDuration(ex.duration) * 60 : null;
+        activeTimers[id] = { seconds: 0, targetSeconds };
+    }
     activeTimers[id].interval = setInterval(() => { activeTimers[id].seconds++; updateTimerDisplay(id); }, 1000);
     const btn = document.getElementById('sbtn-start-'+id);
     if (btn) { btn.textContent = t('pause'); btn.onclick = () => pauseSuggestedTimer(id); }
@@ -1257,7 +1315,8 @@ function pauseSuggestedTimer(id) {
 
 function resetSuggestedTimer(id) {
     if (activeTimers[id]) { clearInterval(activeTimers[id].interval); delete activeTimers[id]; }
-    const el = document.getElementById('stimer-'+id); if (el) el.textContent = '0:00';
+    const el = document.getElementById('stimer-'+id);
+    if (el) { el.textContent = '0:00'; el.classList.remove('timer-done'); }
     const btn = document.getElementById('sbtn-start-'+id);
     if (btn) { btn.textContent = t('startTimer'); btn.onclick = () => startSuggestedTimer(id); }
 }
