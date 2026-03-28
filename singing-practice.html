@@ -6,13 +6,13 @@
     <title>🎤 Singing Practice</title>
     <style>
         :root {
-            --bg: #0f0f13;
-            --card: #1a1a23;
-            --border: #2a2a38;
-            --accent: #7c5cbf;
-            --accent-light: #a07ee0;
-            --text: #e8e8f0;
-            --text-muted: #888899;
+            --bg: #10121a;
+            --card: #1a1d2a;
+            --border: #2e3248;
+            --accent: #2d7ef6;
+            --accent-light: #60a5fa;
+            --text: #e4e8f4;
+            --text-muted: #8b96b5;
             --success: #4caf7d;
             --warning: #f0a050;
             --danger: #e05555;
@@ -48,7 +48,7 @@
         .detail-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 5px; }
         .detail-text { font-size: 13px; line-height: 1.65; color: var(--text); }
         .detail-section { margin-bottom: 12px; }
-        .tip-box { background: rgba(124,92,191,0.12); border-left: 3px solid var(--accent); padding: 10px 14px; border-radius: 0 6px 6px 0; font-size: 13px; line-height: 1.6; }
+        .tip-box { background: rgba(45,126,246,0.12); border-left: 3px solid var(--accent); padding: 10px 14px; border-radius: 0 6px 6px 0; font-size: 13px; line-height: 1.6; }
         .yt-link { display: inline-flex; align-items: center; gap: 5px; color: #c07070; font-size: 12px; font-weight: 400; text-decoration: none; transition: color 0.15s; }
         .yt-link:hover { color: #ff4444; }
 
@@ -165,9 +165,17 @@
         .streak-day.practiced { background: var(--accent); color: white; }
         .streak-day.today { border: 2px solid var(--accent-light); }
         .history-entry { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; }
-        .history-date { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+        .history-date { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; display:flex; align-items:center; justify-content:space-between; }
         .history-pills { display: flex; flex-wrap: wrap; gap: 5px; }
         .history-pill { background: var(--border); border-radius: 99px; padding: 3px 10px; font-size: 12px; }
+        .recap-copy-btn { font-size:11px; padding:2px 9px; opacity:0.7; transition:opacity 0.15s; }
+        .recap-copy-btn:hover { opacity:1; }
+        .history-recap { margin-top:10px; border-top:1px solid var(--border); padding-top:10px; }
+        .recap-text { font-size:12px; line-height:1.7; color:var(--text-muted); white-space:pre-wrap; font-family:inherit; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px 12px; width:100%; box-sizing:border-box; resize:none; }
+        .history-toggle { font-size:11px; color:var(--accent-light); cursor:pointer; background:none; border:none; padding:0; margin-top:6px; }
+        .session-complete-banner { margin-top:14px; background:rgba(72,199,142,0.08); border:1px solid var(--success); border-radius:10px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+        .session-complete-text { font-size:14px; font-weight:600; color:var(--success); }
+        .session-complete-sub { font-size:12px; color:var(--text-muted); margin-top:2px; }
 
         /* SEARCH & FILTERS */
         .search-bar { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 9px 14px; color: var(--text); width: 100%; font-size: 13px; margin-bottom: 12px; font-family: inherit; }
@@ -861,6 +869,7 @@ let expandedExercise = null;
 let expandedSuggested = null;
 let pendingNoteId = null;
 let activeFilter = null;
+let expandedHistoryDate = null;
 
 function renderFilterChips() {
     const c = document.getElementById('filter-chips');
@@ -1215,7 +1224,7 @@ function renderSuggestedSession() {
     };
 
     container.innerHTML = `
-    <div class="card" style="border-color: var(--accent); background: linear-gradient(135deg, rgba(124,92,191,0.07) 0%, var(--card) 100%);">
+    <div class="card" style="border-color: var(--accent); background: linear-gradient(135deg, rgba(45,126,246,0.07) 0%, var(--card) 100%);">
         <div class="suggestion-header">
             <span class="suggestion-title">${txt.suggested}</span>
             <span class="suggestion-cycle-badge">${cycleLabel}</span>
@@ -1252,6 +1261,15 @@ function renderSuggestedSession() {
                 ${txt.addAll}
             </button>
         </div>
+
+        ${allIds.every(id => s.todayDone.has(id)) ? `
+        <div class="session-complete-banner">
+            <div>
+                <div class="session-complete-text">🎉 Sessione completata!</div>
+                <div class="session-complete-sub">Copia il recap e incollalo in una chat AI per ricevere suggerimenti personalizzati.</div>
+            </div>
+            <button class="btn sm recap-copy-btn" onclick="copyTodayRecap(this)">📋 Copia recap</button>
+        </div>` : ''}
     </div>`;
 }
 
@@ -1548,6 +1566,55 @@ function deleteCustomTip(id) {
 //  PROGRESS PAGE
 // ==========================================
 
+function toggleHistoryRecap(dateKey) {
+    expandedHistoryDate = expandedHistoryDate === dateKey ? null : dateKey;
+    renderProgress();
+}
+
+function buildSessionRecap(dateKey) {
+    const sessions = getState().sessions || {};
+    const s = sessions[dateKey];
+    if (!s) return '';
+    const done = s.done || [];
+    const all = getAllExercises();
+    const d = new Date(dateKey + 'T12:00:00');
+    const dateLabel = d.toLocaleDateString('it-IT', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+    const sugg = getSuggestedSession();
+    const cycleLabel = sugg ? `Ciclo ${sugg.cycle.week} — ${planT(sugg.cycle,'title')}` : '';
+
+    const lines = [];
+    lines.push('Sessione di canto — ' + dateLabel);
+    if (cycleLabel) lines.push('Piano corrente: ' + cycleLabel);
+    lines.push('Esercizi completati: ' + done.length);
+    lines.push('');
+    done.forEach(eid => {
+        const ex = all.find(e => e.id === eid);
+        if (!ex) return;
+        const cat = CATEGORIES.find(c => c.id === ex.category);
+        const notes = getNotes(eid);
+        lines.push('• ' + ex.name + ' (' + (ex.duration || '?') + ')' + (cat ? ' — ' + catName(cat) : ''));
+        if (notes) lines.push('  Feedback: "' + notes + '"');
+    });
+    lines.push('');
+    lines.push('---');
+    lines.push('Analizza questa sessione e dammi suggerimenti brevi e pratici su cosa migliorare la prossima volta, basandoti sugli esercizi fatti e sui feedback che ho lasciato.');
+    return lines.join('\n');
+}
+
+function copySessionRecap(dateKey, btnEl) {
+    const text = buildSessionRecap(dateKey);
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+        const orig = btnEl.textContent;
+        btnEl.textContent = '✓ Copiato!';
+        setTimeout(() => { btnEl.textContent = orig; }, 2000);
+    });
+}
+
+function copyTodayRecap(btnEl) {
+    copySessionRecap(getTodayKey(), btnEl);
+}
+
 function renderProgress() {
     // Update headings
     const prog = document.getElementById('page-progress');
@@ -1584,9 +1651,18 @@ function renderProgress() {
         const d = new Date(dateKey+'T12:00:00');
         const label = d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
         const pills = done.map(eid => { const ex = all.find(e=>e.id===eid); return ex?`<span class="history-pill">${ex.name}</span>`:''; }).join('');
+        const isExpanded = expandedHistoryDate === dateKey;
+        const recapText = isExpanded ? buildSessionRecap(dateKey) : '';
         return `<div class="history-entry">
-            <div class="history-date">📅 ${label} · ${done.length} ${t('doneToday2')}</div>
+            <div class="history-date">
+                <span>📅 ${label} · ${done.length} ${t('doneToday2')}</span>
+                <div style="display:flex;gap:6px;align-items:center;">
+                    <button class="btn xs secondary recap-copy-btn" onclick="copySessionRecap('${dateKey}', this)">📋 Copia</button>
+                    <button class="btn xs secondary recap-copy-btn" onclick="toggleHistoryRecap('${dateKey}')">${isExpanded ? '▲ Chiudi' : '▼ Leggi recap'}</button>
+                </div>
+            </div>
             <div class="history-pills">${pills}</div>
+            ${isExpanded ? `<div class="history-recap"><textarea class="recap-text" rows="12" readonly>${recapText}</textarea></div>` : ''}
         </div>`;
     }).filter(Boolean).join('');
 }
