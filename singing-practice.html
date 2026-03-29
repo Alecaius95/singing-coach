@@ -33,6 +33,7 @@
         /* PAGES */
         .page { display: none; padding: 32px 28px; max-width: 860px; margin: 0 auto; }
         .page.active { display: block; }
+        body.onboarding-active .page.active { padding-top: 130px; }
 
         /* MOBILE */
         .mobile-topbar { display: none; }
@@ -48,6 +49,22 @@
             .hamburger { background: none; border: none; cursor: pointer; color: var(--text); font-size: 22px; padding: 4px; line-height: 1; }
             .nav-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 190; }
             .nav-overlay.open { display: block; }
+        }
+
+        /* ONBOARDING */
+        #ob-box { position: fixed; top: 0; left: 230px; right: 0; z-index: 1002; background: #1a1d2a; border-bottom: 2px solid var(--accent-light); border-radius: 0 0 16px 16px; padding: 18px 36px 20px; display: flex; align-items: center; gap: 36px; box-shadow: 0 6px 32px rgba(0,0,0,0.5); }
+        .ob-text-area { flex: 1; min-width: 0; }
+        .ob-counter { font-size: 11px; color: var(--accent-light); margin-bottom: 4px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600; }
+        .ob-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+        .ob-body { font-size: 13px; line-height: 1.6; color: var(--text-muted); }
+        .ob-actions { display: flex; flex-direction: column; gap: 10px; align-items: flex-end; flex-shrink: 0; }
+        .ob-skip { background: none; border: none; color: var(--text-muted); font-size: 12px; cursor: pointer; text-decoration: underline; padding: 0; white-space: nowrap; }
+        .ob-skip:hover { color: var(--text); }
+        .ob-btns { display: flex; gap: 8px; }
+        .ob-spotlight { outline: 3px solid var(--accent-light) !important; outline-offset: 6px; border-radius: 10px; }
+        @media (max-width: 640px) {
+            #ob-box { left: 0; flex-direction: column; padding: 14px 18px 18px; gap: 12px; align-items: stretch; }
+            .ob-actions { flex-direction: row; align-items: center; justify-content: space-between; }
         }
 
         /* EXERCISE LIST */
@@ -268,12 +285,29 @@
 
 <nav id="main-nav">
     <span class="nav-logo">🎤 Singing Practice</span>
+    <button onclick="localStorage.removeItem('ob_done'); startOnboarding()" style="background:rgba(45,126,246,0.1); border:1px solid var(--accent); cursor:pointer; color:var(--accent-light); font-size:12px; font-weight:600; padding:9px 12px; border-radius:9px; transition:all 0.15s; margin-bottom:12px; text-align:center;" onmouseover="this.style.background='rgba(45,126,246,0.2)'" onmouseout="this.style.background='rgba(45,126,246,0.1)'">↺ Mostra tutorial</button>
     <button class="nav-tab" id="tab-exercises" onclick="showPage('exercises')">Esercizi</button>
     <button class="nav-tab active" id="tab-session" onclick="showPage('session')">Oggi</button>
     <button class="nav-tab" id="tab-plan" onclick="showPage('plan')">Piano</button>
     <button class="nav-tab" id="tab-tips" onclick="showPage('tips')">Consigli</button>
     <button class="nav-tab" id="tab-progress" onclick="showPage('progress')">Progressi</button>
 </nav>
+
+<!-- ONBOARDING -->
+<div id="ob-box" style="display:none;">
+    <div class="ob-text-area">
+        <div class="ob-counter" id="ob-counter"></div>
+        <div class="ob-title" id="ob-title"></div>
+        <div class="ob-body" id="ob-body"></div>
+    </div>
+    <div class="ob-actions">
+        <div class="ob-btns">
+            <button class="btn sm secondary" id="ob-back" onclick="obStep(-1)">← Indietro</button>
+            <button class="btn sm" id="ob-next" onclick="obStep(1)">Avanti →</button>
+        </div>
+        <button class="ob-skip" onclick="finishOnboarding()">Salta il tour</button>
+    </div>
+</div>
 
 <div class="main-content">
 
@@ -1908,6 +1942,70 @@ function closeMobileNav() {
     document.getElementById('nav-overlay').classList.remove('open');
 }
 
+// ==========================================
+//  ONBOARDING
+// ==========================================
+
+const OB_STEPS = [
+    { page: 'exercises', navTarget: '#tab-exercises',
+      title: '📚 Esercizi',
+      body: 'Tutti gli esercizi disponibili, organizzati per categoria. Espandine uno per vedere descrizione, consigli pratici e timer.' },
+    { page: 'plan', navTarget: '#tab-plan',
+      title: '🗓️ Piano',
+      body: 'Il percorso a 12 settimane struttura il tuo sviluppo vocale: ogni ciclo ha un focus preciso, dalla respirazione diaframmatica alla voce mista e al passaggio.' },
+    { page: 'session', navTarget: '#tab-session',
+      title: '🎯 Oggi',
+      body: 'In base alla settimana del piano in cui sei, l\'app ti suggerisce ogni giorno una sessione con esercizi di riscaldamento e focus. Segnali come fatti man mano.' },
+    { page: 'tips', navTarget: '#tab-tips',
+      title: '💡 Consigli',
+      body: 'Suggerimenti pratici per ogni area tecnica: respirazione, appoggio, risonanza, passaggio e molto altro. Sfogliali per categoria quando hai bisogno di chiarimenti.' },
+];
+
+let obStep_idx = 0;
+
+function startOnboarding() {
+    if (localStorage.getItem('ob_done')) return;
+    obStep_idx = 0;
+    document.getElementById('ob-box').style.display = 'flex';
+    document.body.classList.add('onboarding-active');
+    renderObStep();
+}
+
+function renderObStep() {
+    const step = OB_STEPS[obStep_idx];
+    const total = OB_STEPS.length;
+
+    // Navigate to the step's page
+    showPage(step.page);
+
+    // Clear previous nav spotlight, set new one
+    document.querySelectorAll('.ob-spotlight').forEach(el => el.classList.remove('ob-spotlight'));
+    const navEl = document.querySelector(step.navTarget);
+    if (navEl) navEl.classList.add('ob-spotlight');
+
+    document.getElementById('ob-counter').textContent = `${obStep_idx + 1} di ${total}`;
+    document.getElementById('ob-title').textContent = step.title;
+    document.getElementById('ob-body').innerHTML = step.body;
+    document.getElementById('ob-back').style.visibility = obStep_idx === 0 ? 'hidden' : 'visible';
+    document.getElementById('ob-next').textContent = obStep_idx === total - 1 ? 'Inizia! 🎤' : 'Avanti →';
+}
+
+function obStep(dir) {
+    const next = obStep_idx + dir;
+    if (next >= OB_STEPS.length) { finishOnboarding(); return; }
+    if (next < 0) return;
+    obStep_idx = next;
+    renderObStep();
+}
+
+function finishOnboarding() {
+    document.getElementById('ob-box').style.display = 'none';
+    document.body.classList.remove('onboarding-active');
+    document.querySelectorAll('.ob-spotlight').forEach(el => el.classList.remove('ob-spotlight'));
+    showPage('session');
+    localStorage.setItem('ob_done', '1');
+}
+
 // Close modals on overlay click
 document.querySelectorAll('.modal-overlay').forEach(overlay => {
     overlay.addEventListener('click', e => { if (e.target===overlay) overlay.classList.remove('open'); });
@@ -2080,6 +2178,7 @@ function builtinTips() {
 //  INIT
 // ==========================================
 renderSession();
+startOnboarding();
 </script>
 
 </div><!-- /main-content -->
