@@ -20,16 +20,35 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-        /* NAV */
-        nav { background: var(--card); border-bottom: 1px solid var(--border); padding: 0 12px; display: flex; align-items: center; gap: 4px; height: 54px; position: sticky; top: 0; z-index: 100; overflow-x: auto; }
-        .nav-logo { font-size: 18px; font-weight: 700; color: var(--accent-light); margin-right: 8px; white-space: nowrap; }
-        .nav-tab { background: none; border: none; color: var(--text-muted); padding: 7px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.15s; white-space: nowrap; }
-        .nav-tab:hover { background: var(--border); color: var(--text); }
-        .nav-tab.active { background: var(--accent); color: white; }
+        /* NAV - sidebar */
+        nav { background: #0d0f18; border-right: 2px solid var(--accent); padding: 28px 14px 24px; display: flex; flex-direction: column; align-items: stretch; gap: 6px; width: 230px; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; overflow-y: auto; transition: transform 0.25s ease; }
+        .nav-logo { font-size: 23px; font-weight: 700; color: var(--accent-light); padding: 4px 12px 24px; white-space: nowrap; }
+        .nav-tab { background: none; border: none; color: var(--text); padding: 13px 18px; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: 500; transition: all 0.15s; text-align: left; opacity: 0.6; }
+        .nav-tab:hover { background: var(--border); opacity: 1; }
+        .nav-tab.active { background: var(--accent); color: white; opacity: 1; font-weight: 600; }
+
+        /* MAIN CONTENT */
+        .main-content { margin-left: 230px; min-height: 100vh; }
 
         /* PAGES */
-        .page { display: none; padding: 20px 14px; max-width: 800px; margin: 0 auto; }
+        .page { display: none; padding: 32px 28px; max-width: 860px; margin: 0 auto; }
         .page.active { display: block; }
+
+        /* MOBILE */
+        .mobile-topbar { display: none; }
+        .nav-overlay { display: none; }
+
+        @media (max-width: 640px) {
+            nav { transform: translateX(-100%); top: 0; z-index: 200; }
+            nav.open { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .page { padding: 16px 14px; }
+            .mobile-topbar { display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 150; background: #0d0f18; border-bottom: 2px solid var(--accent); padding: 0 16px; height: 52px; }
+            .mobile-topbar-title { font-size: 17px; font-weight: 700; color: var(--accent-light); }
+            .hamburger { background: none; border: none; cursor: pointer; color: var(--text); font-size: 22px; padding: 4px; line-height: 1; }
+            .nav-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 190; }
+            .nav-overlay.open { display: block; }
+        }
 
         /* EXERCISE LIST */
         .category-header { display: flex; align-items: center; gap: 10px; padding: 16px 0 8px; font-weight: 600; font-size: 14px; color: var(--accent-light); border-bottom: 1px solid var(--border); margin-bottom: 8px; }
@@ -241,14 +260,22 @@
 </head>
 <body>
 
-<nav>
-    <span class="nav-logo">🎤</span>
+<div class="mobile-topbar">
+    <span class="mobile-topbar-title">🎤 Singing Practice</span>
+    <button class="hamburger" onclick="toggleMobileNav()" aria-label="Menu">☰</button>
+</div>
+<div class="nav-overlay" id="nav-overlay" onclick="closeMobileNav()"></div>
+
+<nav id="main-nav">
+    <span class="nav-logo">🎤 Singing Practice</span>
     <button class="nav-tab" id="tab-exercises" onclick="showPage('exercises')">Esercizi</button>
     <button class="nav-tab active" id="tab-session" onclick="showPage('session')">Oggi</button>
     <button class="nav-tab" id="tab-plan" onclick="showPage('plan')">Piano</button>
     <button class="nav-tab" id="tab-tips" onclick="showPage('tips')">Consigli</button>
     <button class="nav-tab" id="tab-progress" onclick="showPage('progress')">Progressi</button>
 </nav>
+
+<div class="main-content">
 
 <!-- ===================== EXERCISES ===================== -->
 <div id="page-exercises" class="page">
@@ -1867,6 +1894,18 @@ function showPage(name) {
     if (name==='plan') renderPlan();
     if (name==='tips') { renderTips(); }
     if (name==='progress') renderProgress();
+    closeMobileNav();
+}
+
+function toggleMobileNav() {
+    const nav = document.getElementById('main-nav');
+    const overlay = document.getElementById('nav-overlay');
+    const open = nav.classList.toggle('open');
+    overlay.classList.toggle('open', open);
+}
+function closeMobileNav() {
+    document.getElementById('main-nav').classList.remove('open');
+    document.getElementById('nav-overlay').classList.remove('open');
 }
 
 // Close modals on overlay click
@@ -2042,5 +2081,7 @@ function builtinTips() {
 // ==========================================
 renderSession();
 </script>
+
+</div><!-- /main-content -->
 </body>
 </html>
