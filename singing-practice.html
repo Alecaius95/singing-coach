@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎤 Singing Practice</title>
+
+    <!-- PWA -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#2d7ef6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Singing">
+    <link rel="apple-touch-icon" href="./icon.svg">
     <style>
         :root {
             --bg: #10121a;
@@ -21,14 +29,14 @@
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
         /* NAV - sidebar */
-        nav { background: #0d0f18; border-right: 2px solid var(--accent); padding: 28px 14px 24px; display: flex; flex-direction: column; align-items: stretch; gap: 6px; width: 230px; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; overflow-y: auto; transition: transform 0.25s ease; }
-        .nav-logo { font-size: 23px; font-weight: 700; color: var(--accent-light); padding: 4px 12px 24px; white-space: nowrap; }
+        nav { background: #0d0f18; border-right: 2px solid var(--accent); padding: 28px 14px 24px; display: flex; flex-direction: column; align-items: stretch; gap: 6px; width: 260px; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; overflow-y: auto; transition: transform 0.25s ease; }
+        .nav-logo { font-size: 20px; font-weight: 700; color: var(--accent-light); padding: 4px 12px 20px; white-space: nowrap; }
         .nav-tab { background: none; border: none; color: var(--text); padding: 13px 18px; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: 500; transition: all 0.15s; text-align: left; opacity: 0.6; }
         .nav-tab:hover { background: var(--border); opacity: 1; }
         .nav-tab.active { background: var(--accent); color: white; opacity: 1; font-weight: 600; }
 
         /* MAIN CONTENT */
-        .main-content { margin-left: 230px; min-height: 100vh; }
+        .main-content { margin-left: 260px; min-height: 100vh; }
 
         /* PAGES */
         .page { display: none; padding: 32px 28px; max-width: 860px; margin: 0 auto; }
@@ -52,7 +60,7 @@
         }
 
         /* ONBOARDING */
-        #ob-box { position: fixed; top: 0; left: 230px; right: 0; z-index: 1002; background: #1a1d2a; border-bottom: 2px solid var(--accent-light); border-radius: 0 0 16px 16px; padding: 18px 36px 20px; display: flex; align-items: center; gap: 36px; box-shadow: 0 6px 32px rgba(0,0,0,0.5); }
+        #ob-box { position: fixed; top: 0; left: 260px; right: 0; z-index: 1002; background: #1a1d2a; border-bottom: 2px solid var(--accent-light); border-radius: 0 0 16px 16px; padding: 18px 36px 20px; display: flex; align-items: center; gap: 36px; box-shadow: 0 6px 32px rgba(0,0,0,0.5); }
         .ob-text-area { flex: 1; min-width: 0; }
         .ob-counter { font-size: 11px; color: var(--accent-light); margin-bottom: 4px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600; }
         .ob-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
@@ -267,11 +275,47 @@
         h3 { font-size: 14px; margin-bottom: 10px; font-weight: 600; }
         .page-actions { display: flex; gap: 8px; margin-bottom: 16px; justify-content: flex-end; }
 
-        @media (max-width: 600px) {
-            .nav-tab { padding: 6px 9px; font-size: 12px; }
-            .page { padding: 14px 10px; }
-            .session-stats { flex-wrap: wrap; }
-            .stat-box { min-width: calc(33% - 8px); }
+        /* TABLET */
+        @media (max-width: 900px) and (min-width: 641px) {
+            .page { padding: 24px 20px; }
+            .streak-day { height: 36px; font-size: 9px; }
+        }
+
+        /* MOBILE */
+        @media (max-width: 640px) {
+            /* Typography */
+            .session-date { font-size: 16px; }
+            .stat-value { font-size: 20px; }
+            .suggestion-title { font-size: 14px; }
+            h2 { font-size: 15px; }
+
+            /* Stats */
+            .session-stats { gap: 6px; }
+            .stat-box { padding: 8px 10px; }
+
+            /* Streak bar */
+            .streak-bar { gap: 3px; }
+            .streak-day { height: 34px; font-size: 9px; }
+
+            /* Session complete banner */
+            .session-complete-banner { flex-direction: column; align-items: flex-start; gap: 10px; }
+
+            /* History */
+            .history-date { flex-wrap: wrap; gap: 6px; }
+
+            /* Suggestion header */
+            .suggestion-header { flex-wrap: wrap; gap: 6px; }
+
+            /* Plan */
+            .plan-week-header { padding: 10px 12px; }
+            .week-title { font-size: 12px; }
+
+            /* Page actions */
+            .page-actions { justify-content: flex-start; }
+
+            /* Onboarding bar */
+            body.onboarding-active .mobile-topbar { display: none; }
+            body.onboarding-active .page.active { padding-top: 200px; }
         }
     </style>
 </head>
@@ -285,12 +329,13 @@
 
 <nav id="main-nav">
     <span class="nav-logo">🎤 Singing Practice</span>
-    <button onclick="localStorage.removeItem('ob_done'); startOnboarding()" style="background:rgba(45,126,246,0.1); border:1px solid var(--accent); cursor:pointer; color:var(--accent-light); font-size:12px; font-weight:600; padding:9px 12px; border-radius:9px; transition:all 0.15s; margin-bottom:12px; text-align:center;" onmouseover="this.style.background='rgba(45,126,246,0.2)'" onmouseout="this.style.background='rgba(45,126,246,0.1)'">↺ Mostra tutorial</button>
     <button class="nav-tab" id="tab-exercises" onclick="showPage('exercises')">Esercizi</button>
     <button class="nav-tab active" id="tab-session" onclick="showPage('session')">Oggi</button>
     <button class="nav-tab" id="tab-plan" onclick="showPage('plan')">Piano</button>
     <button class="nav-tab" id="tab-tips" onclick="showPage('tips')">Consigli</button>
     <button class="nav-tab" id="tab-progress" onclick="showPage('progress')">Progressi</button>
+    <div style="flex:1;"></div>
+    <button onclick="localStorage.removeItem('ob_done'); startOnboarding()" style="background:none; border:none; cursor:pointer; color:var(--text-muted); font-size:11px; padding:8px 12px 12px; text-align:left; transition:color 0.15s;" onmouseover="this.style.color='var(--accent-light)'" onmouseout="this.style.color='var(--text-muted)'">↺ tutorial</button>
 </nav>
 
 <!-- ONBOARDING -->
@@ -2179,6 +2224,13 @@ function builtinTips() {
 // ==========================================
 renderSession();
 startOnboarding();
+
+// PWA: register service worker
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+    });
+}
 </script>
 
 </div><!-- /main-content -->

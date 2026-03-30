@@ -1,0 +1,18 @@
+{
+  "name": "Singing Practice",
+  "short_name": "Singing",
+  "description": "App per la pratica vocale quotidiana",
+  "start_url": "./singing-practice.html",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#10121a",
+  "theme_color": "#2d7ef6",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
