@@ -371,9 +371,8 @@
     <div class="session-date" id="session-date"></div>
     <p style="color:var(--text-muted); font-size:13px; margin-bottom:18px;" id="session-subtitle"></p>
     <div class="session-stats">
-        <div class="stat-box"><div class="stat-value" id="stat-done">0</div><div class="stat-label">Done today</div></div>
-        <div class="stat-box"><div class="stat-value" id="stat-streak">0</div><div class="stat-label">Streak 🔥</div></div>
-        <div class="stat-box"><div class="stat-value" id="stat-total">0</div><div class="stat-label">Sessions</div></div>
+        <div class="stat-box"><div class="stat-value" id="stat-last30">0</div><div class="stat-label">Ultimi 30 giorni</div></div>
+        <div class="stat-box"><div class="stat-value" id="stat-total">0</div><div class="stat-label">Sessioni totali</div></div>
     </div>
     <div id="suggested-session"></div>
     <div class="section-divider" style="margin-top:0; padding-top:18px;">
@@ -433,9 +432,11 @@
         <div class="form-row">
             <label class="form-label">Difficulty</label>
             <select class="form-select" id="new-ex-diff">
-                <option value="1">⬤○○ Beginner</option>
-                <option value="2">⬤⬤○ Intermediate</option>
-                <option value="3">⬤⬤⬤ Advanced</option>
+                <option value="1">⬤○○○○ Livello 1</option>
+                <option value="2">⬤⬤○○○ Livello 2</option>
+                <option value="3">⬤⬤⬤○○ Livello 3</option>
+                <option value="4">⬤⬤⬤⬤○ Livello 4</option>
+                <option value="5">⬤⬤⬤⬤⬤ Livello 5</option>
             </select>
         </div>
         <div class="form-row">
@@ -494,9 +495,11 @@
         <div class="form-row">
             <label class="form-label">Difficulty</label>
             <select class="form-select" id="edit-ex-diff">
-                <option value="1">⬤○○ Beginner</option>
-                <option value="2">⬤⬤○ Intermediate</option>
-                <option value="3">⬤⬤⬤ Advanced</option>
+                <option value="1">⬤○○○○ Livello 1</option>
+                <option value="2">⬤⬤○○○ Livello 2</option>
+                <option value="3">⬤⬤⬤○○ Livello 3</option>
+                <option value="4">⬤⬤⬤⬤○ Livello 4</option>
+                <option value="5">⬤⬤⬤⬤⬤ Livello 5</option>
             </select>
         </div>
         <div class="form-row">
@@ -556,6 +559,7 @@
 // ==========================================
 
 const CATEGORIES = [
+    { id: 'activation',   name: 'Attivazione muscolare',   icon: '💪' },
     { id: 'warmup',       name: 'Riscaldamento',           icon: '🌅' },
     { id: 'breathing',    name: 'Respirazione',            icon: '💨' },
     { id: 'support',      name: 'Appoggio',                icon: '🏋️' },
@@ -569,12 +573,38 @@ const CATEGORIES = [
 
 // stages: optional array of { label, desc, reps }
 const EXERCISES = [
+    // ATTIVAZIONE MUSCOLARE
+    { id:'neck-rolls', category:'activation', name:'Rotazioni del collo', duration:'2 min', difficulty:1,
+      desc:'Abbassa lentamente il mento verso il petto, poi ruota la testa verso destra portando l\'orecchio alla spalla, poi verso la nuca (senza forzare), poi verso sinistra e ritorna. Fai 3–4 rotazioni lente, poi invertì il senso.',
+      tip:'Il collo è uno dei punti di maggior tensione per i cantanti. Qualsiasi rigidità cervicale si trasmette direttamente alla laringe. Fai questo esercizio a occhi chiusi, lentamente, senza mai forzare.',
+      reps:'3–4 rotazioni per direzione', tags:['collo','cervicale','tensione','corpo'] },
+    { id:'shoulder-release', category:'activation', name:'Scioglimento spalle e trapezio', duration:'2 min', difficulty:1,
+      desc:'Porta le spalle verso le orecchie inspirando, tienile 2 secondi, poi lasciale cadere completamente espirando (× 5). Poi fai 5 rotazioni lente in avanti e 5 all\'indietro. Infine, appoggia la mano destra sulla spalla sinistra, piega la testa verso destra — stretch del trapezio sinistro 15–20 secondi. Ripeti dall\'altro lato.',
+      tip:'Le spalle alzate sono il segnale più visibile di tensione. Un trapezio teso tira su la laringe e forza la voce in una posizione artificialmente alta e rigida.',
+      reps:'5 scrollate + 5 rotazioni per senso + 15–20 sec stretch per lato', tags:['spalle','trapezio','tensione','postura'] },
+    { id:'jaw-wake-up', category:'activation', name:'Scioglimento della mascella', duration:'1 min', difficulty:1,
+      desc:'Apri la bocca lentamente il più possibile (senza dolore), tienila aperta 3 secondi, chiudi piano (× 5). Poi, con la bocca leggermente aperta, disegna piccoli cerchi con la mandibola: avanti, destra, indietro, sinistra (5 cerchi per senso). Infine mastica in modo esagerato per 20 secondi.',
+      tip:'La mascella è uno dei punti critici per i cantanti. Una mascella rigida limita l\'apertura vocale, altera la risonanza e affatica la voce. Dovrebbe muoversi liberamente e senza clic.',
+      reps:'5 aperture lente + 5 cerchi per senso + 20 sec masticazione', tags:['mascella','tensione','apertura','rilassamento'] },
+    { id:'face-activation', category:'activation', name:'Attivazione della maschera facciale', duration:'1 min', difficulty:1,
+      desc:'Massaggia energicamente con le dita guance, naso, fronte e tempie per 20 secondi. Poi alterna "faccia da bulldog" (abbassa guance e mento espirando) e "faccia da sorpresa" (spalanca occhi e bocca inspirando) × 5. Infine fai una "masticazione esagerata" con le labbra per 10 secondi.',
+      tip:'La risonanza nella "maschera" facciale (zigomi, seni nasali, fronte) dipende da quanta tensione muscolare c\'è in quella zona. Attivarla fisicamente prima di cantare migliora il posizionamento del suono.',
+      reps:'20 sec massaggio + 5 alternanze + 10 sec masticazione', tags:['viso','maschera','risonanza','attivazione'] },
+    { id:'intercostal-stretch', category:'activation', name:'Stretching intercostale', duration:'2 min', difficulty:1,
+      desc:'In piedi, piedi larghi quanto le spalle. Alza il braccio destro e piegati lateralmente verso sinistra: apri il lato destro del torace e respira dentro quella sensazione (15–20 sec). Ripeti dall\'altro lato. Poi intreccia le mani dietro la testa e ruota il busto lentamente destra e sinistra × 5 per senso.',
+      tip:'I muscoli intercostali devono espandersi liberamente per la respirazione costo-diaframmatica. Se sono contratti, limitano fisicamente l\'espansione toracica — non puoi "imparare" la tecnica se il corpo non lo permette fisicamente.',
+      reps:'15–20 sec per lato × 2 + 5 rotazioni per senso', tags:['intercostali','torace','respiro','flessibilità'] },
+    { id:'posture-alignment', category:'activation', name:'Allineamento posturale', duration:'1 min', difficulty:1,
+      desc:'In piedi: immagina un filo che ti tira verso l\'alto dalla sommità del cranio. Piedi larghi quanto le spalle, ginocchia morbide (non bloccate), bacino neutro, spalle rilassate e leggermente indietro, mento parallelo al pavimento. Scansiona il corpo dall\'alto verso il basso e rilascia ogni tensione che trovi. Rimani così 30 secondi respirando normalmente.',
+      tip:'La postura è il fondamento fisico del canto. Mento in su, spalle curve o petto incavato creano tensioni che si propagano direttamente alla laringe e al diaframma. Vale la pena fissarla ogni volta.',
+      reps:'30 secondi di scansione consapevole', tags:['postura','allineamento','fondamenta','consapevolezza'] },
+
     // WARM-UPS
-    { id:'lip-trill', category:'warmup', name:'Lip Roll', duration:'3 min', difficulty:1,
+    { id:'lip-trill', category:'warmup', name:'Lip Roll', duration:'3 min', difficulty:2,
       desc:'Blow air gently through loosely closed lips, creating a buzzing/motorboat vibration. While sustaining the trill, slide up and down your range.',
       tip:"If your lips tense up, lightly support the corners of your mouth with two fingers. Total relaxation — let the air do the work. One of the most effective SOVT exercises used even by professionals daily.",
       reps:'5–8 full-range slides, each 5–8 seconds', tags:['sovt','relaxation','range','breath'] },
-    { id:'tongue-trill', category:'warmup', name:'Trill di lingua (R arrotolata)', duration:'2 min', difficulty:2,
+    { id:'tongue-trill', category:'warmup', name:'Trill di lingua (R arrotolata)', duration:'2 min', difficulty:3,
       desc:'Roll your tongue (Italian/Spanish "rrr") while vocalizing across your range. Frees tension in the tongue and jaw.',
       tip:"Can't roll your tongue? Use a fast \"dr-dr-dr\" pattern — nearly as effective. The moment you tense up, you've lost the point.",
       reps:'5–8 slides', tags:['relaxation','range','articulation'] },
@@ -582,21 +612,37 @@ const EXERCISES = [
       desc:'Take a deep yawn (feel the back of your throat open completely), then let out a relaxed, breathy sigh from the top of your range down to the bottom.',
       tip:"Don't try to \"sing\" the sigh — just let it fall. The open space in the back of your throat during a yawn? That's what you want when you sing.",
       reps:'6–10 sighs covering your full range', tags:['relaxation','range','throat space'] },
-    { id:'five-tone-me', category:'warmup', name:'Scala a 5 note su "Me"', duration:'4 min', difficulty:1,
+    { id:'five-tone-me', category:'warmup', name:'Scala a 5 note su "Me"', duration:'4 min', difficulty:2,
       desc:'Sing a five-note scale (1-2-3-4-5-4-3-2-1) on the bright syllable "Me". Start in comfortable middle range and move up by half steps, then descend.',
       tip:'"Me" promotes forward placement and engages twang — buzz between your eyes. Keep it light on the way up.',
       reps:'Move through 8–10 keys', tags:['scale','placement','twang'] },
-    { id:'octave-repeat', category:'warmup', name:'Ripetizione d\'ottava su "Nay"', duration:'4 min', difficulty:2,
+    { id:'octave-repeat', category:'warmup', name:'Ripetizione d\'ottava su "Nay"', duration:'4 min', difficulty:3,
       desc:'Sing the 1-8-1 pattern on "Nay" (nasal and buzzy). Jump an octave up, then return. Move up by half steps.',
       tip:'"Nay" activates twang and forward resonance. Reveals where your passaggio sits as you move higher.',
       reps:'Move through 6–8 keys', tags:['twang','range','passaggio'] },
+    { id:'voiced-v-slide', category:'warmup', name:'Fricativa "V" in slide', duration:'3 min', difficulty:2,
+      desc:'Appoggia i denti superiori sul labbro inferiore e vocalizza una "V" prolungata (come "vvvvv") mentre fai uno slide verso l\'alto e verso il basso per tutta la tua estensione. Mantieni la vibrazione delle labbra costante.',
+      tip:'La "V" è un SOVT eccellente: la resistenza parziale delle labbra riduce la pressione sulle corde e le riscalda in modo molto efficiente. Usato moltissimo dai terapeuti vocali.',
+      reps:'6–8 slide completi su e giù', tags:['sovt','riscaldamento','corde','resistenza'] },
+    { id:'mum-slide', category:'warmup', name:'Slide su "Mum"', duration:'3 min', difficulty:2,
+      desc:'Fai uno slide continuo su "Mum" (m-ah-m). La "M" iniziale chiude le labbra e focalizza la risonanza; la vocale apre. Sali lentamente fino all\'acuto, scendi al grave. Tutto legato, senza interruzioni.',
+      tip:'La "M" finale ti riporta in risonanza di maschera dopo la vocale aperta. Ottimo per collegare registro di petto e di testa in un unico movimento.',
+      reps:'6–8 slide su e giù per l\'intera estensione', tags:['sovt','riscaldamento','mix','legato'] },
+    { id:'wee-slide', category:'warmup', name:'Slide su "Wee"', duration:'3 min', difficulty:2,
+      desc:'Fai uno slide verso l\'alto su "Wee" — parti dal grave e sali fino all\'acuto, poi ridiscendi. La vocale "i" aperta porta naturalmente in voce di testa. Mantieni il suono leggero e non forzato.',
+      tip:'"Wee" accede all\'acuto in modo morbido grazie alla vocale frontale. Se senti un clic o uno stacco brusco salendo, rallenta e riduci il volume finché lo slide non diventa fluido.',
+      reps:'6–8 slide completi', tags:['riscaldamento','acuti','testa','legato'] },
 
     // BREATHING
     { id:'belly-breath', category:'breathing', name:'Respirazione diaframmatica', duration:'5 min', difficulty:1,
-      desc:'One hand on chest, one on belly. Breathe in through nose — only the belly hand rises. Chest stays still. Exhale slowly.',
-      tip:'This is the absolute foundation. If you can\'t isolate belly breathing lying down, you won\'t do it while singing. Practice daily until it\'s your automatic default.',
-      reps:'10–15 slow, conscious breaths', tags:['foundation','diaphragm','beginner'] },
-    { id:'box-breathing', category:'breathing', name:'Respirazione quadrata', duration:'5 min', difficulty:2,
+      desc:'Una mano sul petto, una sulla pancia. Inspira dal naso: solo la mano sulla pancia si alza, il petto resta fermo. Espirazione: lascia uscire l\'aria lentamente e uniformemente, come se stessi soffiando su una candela senza spegnerla. La pancia scende piano, senza collassare di colpo.',
+      tip:'È il fondamento assoluto. Se non riesci a isolare la respirazione addominale da sdraiato, non riuscirai a farlo cantando. Allenala ogni giorno finché non diventa automatica.',
+      reps:'10–15 respiri lenti e consapevoli', tags:['fondamenta','diaframma','principiante'] },
+    { id:'costal-breath', category:'breathing', name:'Respirazione costo-diaframmatica', duration:'5 min', difficulty:2,
+      desc:'Metti le mani sui fianchi con i pollici verso la schiena e le dita verso l\'avanti, come se abbracciassi le costole inferiori. Inspira espandendo in tutte le direzioni: pancia in avanti, costole lateralmente, schiena leggermente indietro verso i pollici. Espirazione: mantieni la sensazione di espansione il più a lungo possibile — non cedere subito — e lascia uscire l\'aria lentamente su una "s" o una "f". Quella resistenza all\'abbassamento delle costole è la base dell\'appoggio.',
+      tip:'La differenza fondamentale rispetto alla sola diaframmatica è che le costole si espandono lateralmente, creando una "camera" più ampia e stabile. Nel canto l\'espirazione è lenta e controllata: non svuotarti, gestisci l\'aria.',
+      reps:'10–12 respiri, concentrandoti sulla tenuta costale durante l\'espirazione', tags:['diaframma','costole','appoggio','respiro'] },
+    { id:'box-breathing', category:'breathing', name:'Respirazione quadrata', duration:'5 min', difficulty:3,
       desc:'Breathe in a box pattern: inhale — hold — exhale — hold. Each phase is timed. This builds breath control, lung capacity, and the ability to manage air on long phrases.',
       tip:'The magic is in the progressive nature: as you get better, the exhale gets longer while the inhale stays the same. This mirrors what happens in singing — short in, long out. Don\'t push the times; advance a stage only when the current one feels completely comfortable.',
       reps:'6–8 cycles per session',
@@ -609,7 +655,7 @@ const EXERCISES = [
         { label:'Stage 5 — Advanced', desc:'Inhale 4s · Hold 4s · Exhale 12s · Hold 2s', reps:'6 cycles — very controlled, no rushing the end of the exhale' },
       ]
     },
-    { id:'hissing', category:'breathing', name:'Sibilo prolungato', duration:'3 min', difficulty:1,
+    { id:'hissing', category:'breathing', name:'Sibilo prolungato', duration:'3 min', difficulty:2,
       desc:'Full diaphragmatic breath. Exhale very slowly on a sustained "ssssss", maintaining perfectly even air pressure. Measure time and extend each round.',
       tip:'Feel your belly slowly deflating — not collapsing. The slight outward resistance is the beginning of breath support.',
       reps:'5–8 hisses — note your time each round',
@@ -625,7 +671,7 @@ const EXERCISES = [
       desc:'Open mouth, pant quickly like a dog — short rapid inhales and exhales. Feel the bouncing in your belly.',
       tip:'This quickly locates your diaphragm. Remember the bouncing sensation — that\'s the muscle you\'ll use for support.',
       reps:'3 rounds of 15 seconds', tags:['diaphragm','activation','awareness'] },
-    { id:'breath-suspension', category:'breathing', name:'Sospensione del respiro (Ictus)', duration:'3 min', difficulty:2,
+    { id:'breath-suspension', category:'breathing', name:'Sospensione del respiro (Ictus)', duration:'3 min', difficulty:3,
       desc:'Inhale fully. Suspend the breath — hold the "ready to sing" position without closing your throat. Hold 3–5s, then release.',
       tip:'The hold should be in the belly/ribs, not the throat. Throat stays open. This is the gestural gateway into appoggio.',
       reps:'8–10 repetitions', tags:['appoggio','control','awareness'] },
@@ -635,32 +681,48 @@ const EXERCISES = [
       reps:'5 minutes continuous — scales, slides, hums', tags:['sovt','efficiency','balance'] },
 
     // SUPPORT & APPOGGIO
-    { id:'appoggio-sensation', category:'support', name:'Trovare l\'appoggio', duration:'5 min', difficulty:2,
+    { id:'appoggio-sensation', category:'support', name:'Trovare l\'appoggio', duration:'5 min', difficulty:3,
       desc:'Inhale deeply — belly and ribs expand. As you exhale on an "s", actively resist the collapse: maintain that expanded feeling. The resistance IS appoggio.',
       tip:"Don't push in or out. Maintain the inhalation posture as you sing. The old Italian school: \"singing on a column of air.\" Think: STAY OPEN.",
       reps:'8–10 times — focus on the sensation', tags:['appoggio','support','posture'] },
-    { id:'staccato-support', category:'support', name:'Staccato su "Ha"', duration:'3 min', difficulty:2,
+    { id:'staccato-support', category:'support', name:'Staccato su "Ha"', duration:'3 min', difficulty:3,
       desc:'Sing short staccato notes on "Ha" up a five-tone scale. Each note from a small abdominal pulse — not from closing the throat.',
       tip:'Place your hand on your belly. Each "Ha" = small belly contraction. Harsh attack = throat. Clean light attack = support.',
       reps:'5–8 scales ascending and descending', tags:['support','staccato','attack'] },
-    { id:'messa-di-voce', category:'support', name:'Messa di Voce', duration:'5 min', difficulty:3,
+    { id:'messa-di-voce', category:'support', name:'Messa di Voce', duration:'5 min', difficulty:5,
       desc:'Hold a single note. Start very soft (pianissimo), crescendo to full volume (forte), decrescendo back to pianissimo. Pitch stays perfectly stable.',
       tip:'One of the supreme exercises in classical vocal training. Going flat softly = insufficient support. Going sharp loudly = over-pressing.',
       reps:'5–8 notes on different pitches', tags:['control','dynamics','advanced','support'] },
-    { id:'rib-expansion', category:'support', name:'Espansione laterale delle costole', duration:'3 min', difficulty:1,
+    { id:'rib-expansion', category:'support', name:'Espansione laterale delle costole', duration:'3 min', difficulty:2,
       desc:'Hands on your floating ribs. Breathe in and push your ribs outward sideways into your hands. Maintain that expansion and sing a sustained note.',
       tip:'Most singers breathe only forward. Lateral expansion gives more lung capacity and a more stable support base.',
       reps:'8 repetitions with sustained tone', tags:['support','breath','awareness'] },
+    { id:'shh-pulses', category:'support', name:'Impulsi su "Shh"', duration:'2 min', difficulty:2,
+      desc:'Emetti una serie di impulsi brevi e decisi su "Shh! Shh! Shh!" — come se stessi zittendo qualcuno. Ogni impulso viene dall\'addome, non dalla gola. Poi fai la stessa cosa fonando: "Hah! Hah! Hah!" su una nota comoda.',
+      tip:'Isola il diaframma in modo molto diretto. Se senti la gola che lavora invece dell\'addome, riduci l\'intensità. La sensazione corretta è una piccola contrazione bassa, non una stretta nella laringe.',
+      reps:'4–5 serie da 8–10 impulsi', tags:['diaframma','supporto','attacco','impulso'] },
+    { id:'sustained-appoggio', category:'support', name:'Nota tenuta con appoggio', duration:'4 min', difficulty:3,
+      desc:'Inspira costo-diaframmaticamente. Su una nota confortevole, canta una "A" tenuta per 8–10 secondi mantenendo la sensazione di espansione costale per tutta la durata. Poi ripeti sulla stessa nota crescendo dal piano al forte senza mai cedere il supporto.',
+      tip:'Il test dell\'appoggio: se la nota vacilla, cade di intonazione o trema al crescendo, il supporto è crollato. L\'obiettivo è che la nota resti stabile indipendentemente dal volume.',
+      reps:'6–8 note su altezze diverse, mezzovoce e piena', tags:['appoggio','supporto','intonazione','controllo'] },
 
     // CHEST VOICE
-    { id:'chest-call', category:'chest', name:'Schema "Call" / Belting', duration:'4 min', difficulty:2,
+    { id:'chest-call', category:'chest', name:'Schema "Call" / Belting', duration:'4 min', difficulty:3,
       desc:'Five-tone scale with a bold forward "call" sound — like calling across a room. Use "Hey!" or "Nay!". Stay in chest register.',
       tip:'Power from support, not throat. If it feels strained or your voice is tired after, you\'re either too high or lacking support.',
       reps:'6–8 scales within chest range', tags:['chest','belt','placement','modern'] },
-    { id:'chest-sustained', category:'chest', name:'"Ah" prolungato in petto', duration:'3 min', difficulty:1,
+    { id:'chest-sustained', category:'chest', name:'"Ah" prolungato in petto', duration:'3 min', difficulty:2,
       desc:'Sustained open "Ah" on comfortable pitches in chest register. Full, warm, resonant tone — no pushing.',
       tip:'A well-produced chest tone feels warm behind the sternum. Avoid pulling chest voice too high (past ~E4-F4 for most men).',
       reps:'8–10 notes — notice where it gets tight', tags:['chest','resonance','vowel'] },
+    { id:'chest-scales-gah', category:'chest', name:'Scale su "Gah" in petto', duration:'4 min', difficulty:3,
+      desc:'Scala a 5 note (1-2-3-4-5-4-3-2-1) su "Gah". La "G" inizia con una chiusura efficiente delle corde; la vocale aperta "ah" apre la risonanza di petto. Resta nel registro di petto, senza tirare troppo in alto.',
+      tip:'Il "G" è un attacco glottale morbido — prepara le corde senza colpirle. Se senti tensione alla gola salendo, sei già uscito dal range di petto confortevole: scendi di mezzo tono.',
+      reps:'6–8 scale, spostati su di mezzo tono ad ogni ripetizione', tags:['petto','scala','attacco','risonanza'] },
+    { id:'chest-spoken-slide', category:'chest', name:'Dal parlato al cantato', duration:'3 min', difficulty:2,
+      desc:'Scegli una nota confortevole nel tuo range parlato — quella che useresti naturalmente per dire "Hey!". Parlaci sopra brevemente, poi trasforma quella stessa nota in una nota cantata tenuta. La qualità del suono deve essere la stessa: diretta, presente, senza sforzo.',
+      tip:'I migliori cantanti pop/rock suonano come se stessero parlando a ritmo. Questa connessione tra voce parlata e cantata è fondamentale per un suono moderno e non operistico.',
+      reps:'8–10 transizioni parlato→cantato su note diverse', tags:['petto','moderno','connessione','parlato'] },
 
     // HEAD VOICE
     { id:'hooty-oo', category:'head', name:'"Oo" aperto in voce di testa', duration:'4 min', difficulty:2,
@@ -671,63 +733,95 @@ const EXERCISES = [
       desc:'Imitate a puppy whimpering — gentle, slightly nasal, high-pitched. Let it slide freely around upper register.',
       tip:'Should feel embarrassingly easy — almost silly. That effortlessness IS the exercise. Don\'t try to sound good.',
       reps:'5–8 slides up into upper range', tags:['head voice','effortless','access'] },
-    { id:'ng-scale', category:'head', name:'Scala "Ng" in voce di testa', duration:'4 min', difficulty:2,
+    { id:'ng-scale', category:'head', name:'Scala "Ng" in voce di testa', duration:'4 min', difficulty:3,
       desc:'Sing a five-tone scale on the "Ng" sound (end of "sing"). This SOVT sound automatically accesses head register and forward placement.',
       tip:'"Ng" = back of tongue to soft palate. Reduces excess air and promotes head resonance. Gets easier as you go higher.',
       reps:'8–10 scales ascending and descending', tags:['head voice','sovt','placement'] },
+    { id:'head-sustained', category:'head', name:'Nota tenuta in voce di testa', duration:'3 min', difficulty:2,
+      desc:'Su note nell\'acuto (dove sai già di avere voce di testa), canta una "Oh" o "Oo" tenuta per 5–8 secondi. Cerca un suono rotondo, non stridulo. Poi prova piano: la nota tenuta piano in testa è più difficile di quella forte.',
+      tip:'Una voce di testa tenuta e stabile è il requisito per poi lavorarla in dinamica. Se trema o va piatta, è il supporto che cede: tieni le costole espanse.',
+      reps:'8–10 note in zone diverse dell\'acuto', tags:['testa','tenuto','stabilità','dinamica'] },
+    { id:'head-descend', category:'head', name:'Discesa dalla voce di testa', duration:'3 min', difficulty:3,
+      desc:'Parti da una nota sicura in voce di testa. Scendi cromaticamente, nota per nota, cercando di mantenere la stessa qualità di voce di testa il più in basso possibile. Non passare forzatamente al petto: lascia che la transizione avvenga quando deve avvenire.',
+      tip:'La voce di testa si "estende" verso il basso con l\'allenamento. Ogni sessione, nota fino a dove riesci a scendere prima che la qualità cambi — è il tuo indicatore di progresso.',
+      reps:'4–6 discese cromatiche partendo da altezze diverse', tags:['testa','estensione','mix','passaggio'] },
 
     // FALSETTO
-    { id:'falsetto-hoots', category:'falsetto', name:'Ululati in falsetto', duration:'3 min', difficulty:1,
+    { id:'falsetto-hoots', category:'falsetto', name:'Ululati in falsetto', duration:'3 min', difficulty:2,
       desc:'In pure falsetto — light, airy — sing short sustained notes on "Hoo". Let it be freely breathy.',
       tip:'Develop a strong reliable falsetto first. It\'s the foundation for head voice and mixed voice. Don\'t judge the sound.',
       reps:'8–12 notes in upper range', tags:['falsetto','light','access'] },
-    { id:'falsetto-scales', category:'falsetto', name:'Scale leggere in falsetto', duration:'4 min', difficulty:2,
+    { id:'falsetto-scales', category:'falsetto', name:'Scale leggere in falsetto', duration:'4 min', difficulty:3,
       desc:'Five-tone scale entirely in falsetto. Light and breathy. Ascend then descend. Note where it becomes unstable going low.',
       tip:'Going lower in falsetto is much harder. The instability point going down is your "break" from below — track it over time.',
       reps:'6–8 scales', tags:['falsetto','range','stability'] },
-    { id:'falsetto-to-chest', category:'falsetto', name:'Salti Falsetto ↔ Petto', duration:'4 min', difficulty:3,
+    { id:'falsetto-to-chest', category:'falsetto', name:'Salti Falsetto ↔ Petto', duration:'4 min', difficulty:4,
       desc:'On one pitch, alternate: "Hoo (falsetto) — Hey (chest) — Hoo — Hey". Deliberate conscious register switching.',
       tip:'This makes the difference unmistakably clear and trains deliberate register control — the first step toward mixing.',
       reps:'6–8 repetitions on 3–4 pitches around your passaggio', tags:['falsetto','chest','register control','advanced'] },
+    { id:'falsetto-ng', category:'falsetto', name:'"Ng" in falsetto — chiusura delle corde', duration:'3 min', difficulty:3,
+      desc:'Fai scale a 5 note in falsetto su "Ng" (il suono finale di "sing"). Il "Ng" forza un contatto parziale delle corde anche in falsetto, riducendo l\'aerosità. Sali piano senza spingere.',
+      tip:'Questo è il bridge tra falsetto aeroso e voce di testa piena. Se senti il suono diventare più compatto e meno "vuoto", stai migliorando la chiusura delle corde — esattamente il tuo punto debole attuale.',
+      reps:'8–10 scale in chiavi diverse', tags:['falsetto','chiusura','ng','sovt'] },
+    { id:'falsetto-dynamics', category:'falsetto', name:'Dinamiche in falsetto', duration:'3 min', difficulty:4,
+      desc:'Su una nota in falsetto, parti fortissimo e riduci gradualmente il volume fino quasi al silenzio, poi riportalo su. Non usare più aria per suonare forte — usa invece più compressione sottoglottica. Piano = meno aria, non più aria.',
+      tip:'Il falsetto piano è uno degli esercizi più difficili per i cantanti maschi. Richiede una chiusura delle corde molto precisa con pochissima aria. Se il suono sparisce completamente a volume basso, le corde si stanno aprendo troppo.',
+      reps:'6–8 note su altezze diverse', tags:['falsetto','dinamica','controllo','chiusura'] },
 
     // MIXED VOICE
     { id:'siren', category:'mixed', name:'Sirena a piena estensione', duration:'4 min', difficulty:2,
       desc:'Smoothly glide from bottom to top of your range and back — like a fire truck siren. Use "ee" or "oo". Try not to flip.',
       tip:'Your primary diagnostic tool. Listen each session: same flip point? Same airy section? Don\'t force — just observe. Over time the siren smooths out.',
       reps:'6–8 full-range slides', tags:['mixed','passaggio','range','diagnostic'] },
-    { id:'cry-exercise', category:'mixed', name:'Pianto/Lamento su "Wee"', duration:'4 min', difficulty:2,
+    { id:'cry-exercise', category:'mixed', name:'Pianto/Lamento su "Wee"', duration:'4 min', difficulty:3,
       desc:'With a whiny, "cry" quality, sing a five-tone scale or octave jump on "Wee". Lean into the undignified quality.',
       tip:'The cry triggers a specific laryngeal posture that allows registers to blend smoothly. Feels silly, works brilliantly.',
       reps:'6–8 patterns through your passaggio', tags:['mixed','passaggio','blend'] },
-    { id:'nay-scale', category:'mixed', name:'Scala "Nay" attraverso il break', duration:'5 min', difficulty:3,
+    { id:'nay-scale', category:'mixed', name:'Scala "Nay" attraverso il break', duration:'5 min', difficulty:4,
       desc:'Sing "Nay Nay Nay Nay Nay" on a five-tone scale, pushing through your passaggio with chest energy. The "ay" and twang carry you higher.',
       tip:'"Nay" adds twang (fold mass) which helps bridge the gap. Go into the keys where your voice wants to flip — and fight it.',
       reps:'8–10 scales through and past your break', tags:['mixed','passaggio','chest mix','advanced'] },
-    { id:'gee-octave', category:'mixed', name:'Salto d\'ottava su "Gee"', duration:'4 min', difficulty:3,
+    { id:'gee-octave', category:'mixed', name:'Salto d\'ottava su "Gee"', duration:'4 min', difficulty:4,
       desc:'Sing 1-8-1 on "Gee". The "G" consonant initiates efficient fold closure; "ee" promotes forward placement.',
       tip:'Forces the voice to navigate the passaggio in one move. If you flip to falsetto on top — great, you\'re in the right range. Over time, keep chest mix on top.',
       reps:'6–8 jumps ascending by half steps', tags:['mixed','octave','advanced','passaggio'] },
+    { id:'mix-five-tone', category:'mixed', name:'Scala a 5 note in voce mista', duration:'4 min', difficulty:3,
+      desc:'Scala 1-2-3-4-5-4-3-2-1 su "Mmm-Ah": inizia la nota chiuso su "M", poi apri sulla vocale. Porta la scala attraverso il passaggio cercando di non cambiare qualità di voce tra la nota 3 e la nota 5.',
+      tip:'La "M" iniziale rilassa la laringe e porta risonanza in avanti prima che la vocale apra. Se la qualità cambia bruscamente salendo, prova a "portare il grave verso l\'acuto" invece di cambiare registro.',
+      reps:'8–10 scale attraverso e oltre il passaggio', tags:['mista','passaggio','scala','blend'] },
+    { id:'mix-volume', category:'mixed', name:'Dinamiche nella voce mista', duration:'4 min', difficulty:4,
+      desc:'Su una nota nel tuo passaggio (E4-G4 circa), parti piano in voce mista e cresci fino al forte rimanendo in mix — senza passare al petto pieno. Poi l\'inverso: forte → piano senza scivolare in falsetto.',
+      tip:'Le dinamiche in zona di passaggio sono il test definitivo della voce mista. Piano = più controllo dell\'aria; forte = più supporto. Entrambi richiedono la stessa posizione laringea.',
+      reps:'6–8 note con dinamiche crescenti e decrescenti', tags:['mista','dinamica','passaggio','controllo'] },
 
     // RESONANCE
     { id:'humming', category:'resonance', name:'Humming prolungato', duration:'4 min', difficulty:1,
       desc:'Hum on "mmm" with lips lightly touching. Feel vibration in lips, cheeks, forehead. Slide up and down your range.',
       tip:'More vibration in chest than face = resonance too low. Place the hum forward — imagine sound bouncing off your front teeth.',
       reps:'4–5 minutes continuous', tags:['resonance','placement','awareness','sovt'] },
-    { id:'ee-vowel', category:'resonance', name:'Posizionamento anteriore su "Ee"', duration:'3 min', difficulty:1,
+    { id:'ee-vowel', category:'resonance', name:'Posizionamento anteriore su "Ee"', duration:'3 min', difficulty:2,
       desc:'Sustained "ee" notes on comfortable pitches. Focus on WHERE you feel resonance — aim for the mask (cheeks, nose bridge).',
       tip:'"Ee" is the most naturally forward-placed vowel. Find it here, then carry that placement into "Ah" and "Oh".',
       reps:'8–10 notes across the range', tags:['resonance','placement','vowel'] },
-    { id:'vowel-modification', category:'resonance', name:'Modifica delle vocali', duration:'5 min', difficulty:3,
+    { id:'vowel-modification', category:'resonance', name:'Modifica delle vocali', duration:'5 min', difficulty:5,
       desc:'Sing a scale on "Ah". As you ascend: Ah → Uh (cup) → Aw. Allow the modification on high notes — don\'t maintain a pure Ah.',
       tip:'On high notes, pure "Ah" fights vocal acoustics. Modification often makes high notes EASIER. Make it conscious.',
       reps:'5–8 scales, pay attention to the modification point', tags:['resonance','vowel modification','high notes','advanced'] },
-    { id:'twang', category:'resonance', name:'Attivazione del twang — "Quack"', duration:'3 min', difficulty:2,
+    { id:'twang', category:'resonance', name:'Attivazione del twang — "Quack"', duration:'3 min', difficulty:3,
       desc:'Imitate a duck: maximum nasal, buzzy "Quack quack quack!" Fully exaggerate. Then gradually reduce while keeping the brightness.',
       tip:'Twang can nearly double your volume with no extra effort. The quack is extreme — 20–30% twang gives a bright, carrying tone without shouting.',
       reps:'10–12 exaggerated quacks, then 5–6 scales with mild twang', tags:['resonance','twang','belt','modern'] },
+    { id:'oh-placement', category:'resonance', name:'Posizionamento su "Oh"', duration:'3 min', difficulty:3,
+      desc:'Canta note tenute su "Oh" (come in "sole"). "Oh" è la vocale più difficile da posizionare — tende a cadere in gola. Cerca la stessa sensazione di vibrazione nella maschera che hai su "Ee". Poi prova la transizione "Ee → Oh" mantenendo il posizionamento alto.',
+      tip:'"Oh" richiede che la laringe resti abbassata mentre la risonanza resta alta — è un equilibrio non intuitivo. Se senti il suono diventare "gutturale", torna su "Ee" e poi riprova con "Oh".',
+      reps:'8–10 note + 5–6 transizioni Ee→Oh', tags:['risonanza','posizionamento','vocali','maschera'] },
+    { id:'resonance-transfer', category:'resonance', name:'Trasferimento della risonanza tra vocali', duration:'4 min', difficulty:4,
+      desc:'Su una scala a 5 note, canta la sequenza "Ee-Eh-Ah-Oh-Oo" su ogni nota, legato. L\'obiettivo è mantenere la stessa altezza di risonanza in tutte e cinque le vocali — come se le stessi cantando tutte con la stessa "camera" interna.',
+      tip:'La modifica delle vocali sulle note acute è una conseguenza di questo principio: non è capriccio, è fisica acustica. Più sali, più le vocali si avvicinano tra loro. Questo esercizio rende il processo consapevole.',
+      reps:'6–8 scale in chiavi diverse', tags:['risonanza','vocali','legato','avanzato'] },
 
     // ARTICULATION
-    { id:'tongue-twisters', category:'articulation', name:'Scioglilingua', duration:'3 min', difficulty:2,
+    { id:'tongue-twisters', category:'articulation', name:'Scioglilingua', duration:'3 min', difficulty:3,
       desc:'Speak then sing: "Red lorry yellow lorry", "She sells seashells", "Unique New York". Slow first, then faster.',
       tip:'Consonants = crisp and released immediately. Vowel carries the tone. Don\'t hang onto consonants — release into the vowel.',
       reps:'5–8 rounds mixing spoken and sung', tags:['articulation','diction','clarity'] },
@@ -739,6 +833,14 @@ const EXERCISES = [
       desc:'Five-tone scales on: "Ba Ba Ba", "Da Da Da", "La La La", "Ma Ma Ma". Crisp consonant → immediately full open vowel.',
       tip:'Crisp consonant, full sustained vowel. Avoid swallowing consonants or breaking legato with over-pronounced ones.',
       reps:'4–6 scales per syllable', tags:['articulation','diction','clarity','legato'] },
+    { id:'legato-vowels', category:'articulation', name:'Legato tra vocali', duration:'3 min', difficulty:3,
+      desc:'Su una scala a 5 note, canta "Ah-Ee-Ah-Ee-Ah" legato su ogni nota — senza staccare mai il suono tra una vocale e l\'altra. Le consonanti spariscono, resta solo il flusso. Poi prova con "Oh-Ah-Oh-Ah-Oh".',
+      tip:'Le interruzioni nel legato vengono quasi sempre dalle consonanti o da micro-tensioni tra una vocale e l\'altra. Questo esercizio le isola e le elimina. Un legato perfetto suona come se il cantante non respirasse mai.',
+      reps:'6–8 scale in chiavi diverse', tags:['legato','vocali','flusso','articolazione'] },
+    { id:'text-rhythm', category:'articulation', name:'Ritmo del testo su nota fissa', duration:'3 min', difficulty:2,
+      desc:'Prendi una frase di una canzone che stai studiando. Cantala tutta su una nota singola, prestando attenzione solo a ritmo, pronuncia e consonanti chiare. Non pensare alla melodia — solo parole e tempo.',
+      tip:'Separare le parole dalla melodia rivela tutti i problemi di dizione. Se non riesci a capire il testo su una nota fissa, non si capirà neanche sulla melodia originale.',
+      reps:'3–4 frasi diverse, 3 ripetizioni ciascuna', tags:['testo','ritmo','dizione','canzone'] },
 ];
 
 // ==========================================
@@ -857,6 +959,17 @@ function getStreak() {
 }
 function getTotalSessions() {
     return Object.values(getState().sessions||{}).filter(s=>s.done&&s.done.length>0).length;
+}
+function getLast30Days() {
+    const sessions = getState().sessions || {};
+    let count = 0;
+    const today = new Date();
+    for (let i = 0; i < 30; i++) {
+        const d = new Date(today); d.setDate(d.getDate() - i);
+        const key = d.toISOString().slice(0, 10);
+        if (sessions[key] && sessions[key].done && sessions[key].done.length > 0) count++;
+    }
+    return count;
 }
 function getAllExercises() {
     return [...EXERCISES, ...getCustomExercises()];
@@ -1014,7 +1127,9 @@ function renderExercises(filter='') {
             const isDone = done.includes(ex.id);
             const isExpanded = expandedExercise === ex.id;
             const isCustom = !!ex.custom;
-            const diffDots = [1,2,3].map(i=>`<div class="dot ${i<=ex.difficulty?'filled':''}"></div>`).join('');
+            const diffDots = ex.category === 'activation'
+                ? '<span style="font-size:11px; color:var(--text-muted);">💪</span>'
+                : [1,2,3,4,5].map(i=>`<div class="dot ${i<=ex.difficulty?'filled':''}"></div>`).join('');
             html += `<div class="exercise-item ${isExpanded?'expanded':''} ${isCustom?'custom-ex':''}" onclick="toggleExercise('${ex.id}')">
                 <div class="exercise-difficulty">${diffDots}</div>
                 <div class="exercise-title">${exT(ex,'name')} ${isCustom?`<span class="custom-badge">${t('custom')}</span>`:''}</div>
@@ -1025,12 +1140,12 @@ function renderExercises(filter='') {
                 const stageIdx = getStage(ex.id);
                 const stages = exStages(ex);
                 const currentStage = stages ? stages[stageIdx] : null;
-                const diffLevels = [t('beginner'), t('intermediate'), t('advanced')];
+                const diffLevels = ['Livello 1','Livello 2','Livello 3','Livello 4','Livello 5'];
                 html += `<div class="exercise-detail open" onclick="event.stopPropagation()">
                     <div style="margin-bottom:12px; display:flex; flex-wrap:wrap; gap:4px;">
                         ${(ex.tags||[]).map(tg=>`<span class="tag">${tg}</span>`).join('')}
                         ${ex.duration?`<span class="tag">⏱ ${ex.duration}</span>`:''}
-                        <span class="tag">${diffLevels[(ex.difficulty||1)-1]}</span>
+                        ${ex.category !== 'activation' ? `<span class="tag">${diffLevels[(ex.difficulty||1)-1]}</span>` : ''}
                     </div>
                     <div class="detail-section"><div class="detail-label">${t('howTo')}</div><div class="detail-text">${exT(ex,'desc')}</div></div>
                     ${currentStage ? `
@@ -1052,9 +1167,9 @@ function renderExercises(filter='') {
                     ${getYoutubeUrl(ex.id) ? `<div class="detail-section"><a class="yt-link" href="${getYoutubeUrl(ex.id)}" target="_blank" rel="noopener">Guarda esempio su YouTube</a></div>` : ''}
                     <div class="detail-section">
                         <div class="detail-label">Timer</div>
-                        <div class="timer-display" id="timer-${ex.id}">0:00</div>
+                        <div class="timer-display" id="timer-${ex.id}">${activeTimers[ex.id]?Math.floor(activeTimers[ex.id].seconds/60)+':'+String(activeTimers[ex.id].seconds%60).padStart(2,'0'):'0:00'}</div>
                         <div class="timer-controls">
-                            <button class="btn sm" id="btn-start-${ex.id}" onclick="startTimer('${ex.id}')">${t('startTimer')}</button>
+                            <button class="btn sm" id="btn-start-${ex.id}" onclick="${activeTimers[ex.id]&&activeTimers[ex.id].interval?`pauseTimer('${ex.id}')`:`startTimer('${ex.id}')`}">${activeTimers[ex.id]?activeTimers[ex.id].interval?t('pause'):t('resume'):t('startTimer')}</button>
                             <button class="btn sm secondary" onclick="resetTimer('${ex.id}')">${t('reset')}</button>
                         </div>
                     </div>
@@ -1167,27 +1282,44 @@ function getSuggestedSession() {
     const todayKey = getTodayKey();
     const todayDone = new Set((getSession(todayKey).done || []));
 
+    // ── Recent history (3-day and 14-day windows) ────────────────
+    const veryRecentDone = new Set();
+    for (let i = 1; i <= 3; i++) {
+        const d = new Date(today); d.setDate(d.getDate() - i);
+        const key = d.toISOString().slice(0, 10);
+        if (sessions[key] && sessions[key].done) sessions[key].done.forEach(id => veryRecentDone.add(id));
+    }
+
     // ── Warm-up block (5–7 min) ─────────────────────────────────
-    // Determine the primary skill area of this cycle
+    // Context-aware pool of candidates, sorted by recency (least recently done first)
     const cycleCats = currentCycle.exercises
         .map(id => all.find(e => e.id === id))
         .filter(Boolean).map(e => e.category);
     const primaryCat = cycleCats[0] || 'warmup';
 
-    // Always anchor with lip-trill, then pick a second based on context
-    const warmupCandidates = (() => {
+    const warmupPool = (() => {
+        const sovt    = ['lip-trill', 'voiced-v-slide', 'mum-slide'];
+        const light   = ['yawn-sigh', 'wee-slide'];
+        const melodic = ['five-tone-me', 'octave-repeat'];
         if (['breathing','support'].includes(primaryCat))
-            return ['lip-trill', 'yawn-sigh', 'hissing'];
+            return [...sovt, ...light, 'hissing'];
         if (['falsetto','head','mixed'].includes(primaryCat))
-            return ['lip-trill', 'yawn-sigh', 'octave-repeat'];
+            return [...sovt, ...light, ...melodic];
         if (['resonance','articulation'].includes(primaryCat))
-            return ['lip-trill', 'five-tone-me', 'yawn-sigh'];
-        return ['lip-trill', 'yawn-sigh', 'five-tone-me'];
+            return [...sovt, ...melodic, ...light];
+        return [...sovt, ...light, ...melodic];
     })();
+
+    // Sort pool: not done in 3 days → not done in 14 days → done recently
+    const warmupSorted = [
+        ...warmupPool.filter(id => !veryRecentDone.has(id) && !recentDone.has(id)),
+        ...warmupPool.filter(id => !veryRecentDone.has(id) && recentDone.has(id)),
+        ...warmupPool.filter(id => veryRecentDone.has(id)),
+    ];
 
     let warmupMins = 0;
     const warmup = [];
-    for (const id of warmupCandidates) {
+    for (const id of warmupSorted) {
         const ex = all.find(e => e.id === id);
         if (!ex) continue;
         const dur = parseDuration(ex.duration);
@@ -1196,22 +1328,31 @@ function getSuggestedSession() {
     }
 
     // ── Focus block (12–16 min) ──────────────────────────────────
-    // Cycle exercises, excluding warm-ups, prioritising not-recently-done
     const cycleExIds = currentCycle.exercises.filter(id => !warmup.includes(id));
-    // Sort for selection priority: fresh first, then recent, then done today
+
+    // Priority: fresh (not done in 14d) → done in 14d but not 3d → done in 3d → done today
     const sorted = [
         ...cycleExIds.filter(id => !recentDone.has(id) && !todayDone.has(id)),
-        ...cycleExIds.filter(id => recentDone.has(id) && !todayDone.has(id)),
+        ...cycleExIds.filter(id => recentDone.has(id) && !veryRecentDone.has(id) && !todayDone.has(id)),
+        ...cycleExIds.filter(id => veryRecentDone.has(id) && !todayDone.has(id)),
         ...cycleExIds.filter(id => todayDone.has(id)),
     ];
 
+    // Difficulty balancing: avoid stacking more than one level-4/5 exercise
     let focusMins = 0;
+    let highDiffCount = 0;
     const focus = [];
     for (const id of sorted) {
         const ex = all.find(e => e.id === id);
         if (!ex) continue;
         const dur = parseDuration(ex.duration);
-        if (focusMins + dur <= 16) { focus.push(id); focusMins += dur; }
+        const isHigh = (ex.difficulty || 1) >= 4;
+        if (isHigh && highDiffCount >= 1) continue; // max 1 high-diff per session
+        if (focusMins + dur <= 16) {
+            focus.push(id);
+            focusMins += dur;
+            if (isHigh) highDiffCount++;
+        }
         if (focusMins >= 12) break;
     }
     // Restore original cycle order so marking done doesn't move exercises around
@@ -1258,7 +1399,7 @@ function renderSuggestedSession() {
                 <div style="margin-bottom:12px; display:flex; flex-wrap:wrap; gap:4px;">
                     ${(ex.tags||[]).map(tg=>`<span class="tag">${tg}</span>`).join('')}
                     ${ex.duration?`<span class="tag">⏱ ${ex.duration}</span>`:''}
-                    <span class="tag">${diffLevels[(ex.difficulty||1)-1]}</span>
+                    ${ex.category !== 'activation' ? `<span class="tag">${diffLevels[(ex.difficulty||1)-1]}</span>` : ''}
                 </div>
                 <div class="detail-section"><div class="detail-label">${t('howTo')}</div><div class="detail-text">${exT(ex,'desc')}</div></div>
                 ${currentStage ? `
@@ -1280,7 +1421,7 @@ function renderSuggestedSession() {
                 ${getYoutubeUrl(ex.id) ? `<div class="detail-section"><a class="yt-link" href="${getYoutubeUrl(ex.id)}" target="_blank" rel="noopener">Guarda esempio su YouTube</a></div>` : ''}
                 <div class="detail-section">
                     <div class="detail-label">Timer</div>
-                    <div class="timer-display" id="stimer-${ex.id}">0:00</div>
+                    <div class="timer-display" id="stimer-${ex.id}">${activeTimers[ex.id]?Math.floor(activeTimers[ex.id].seconds/60)+':'+String(activeTimers[ex.id].seconds%60).padStart(2,'0'):'0:00'}</div>
                     <div class="timer-controls">
                         <button class="btn sm" id="sbtn-start-${ex.id}" onclick="${activeTimers[ex.id]&&activeTimers[ex.id].interval?`pauseSuggestedTimer('${ex.id}')`:`startSuggestedTimer('${ex.id}')`}">${activeTimers[ex.id]?activeTimers[ex.id].interval?t('pause'):t('resume'):t('startTimer')}</button>
                         <button class="btn sm secondary" onclick="resetSuggestedTimer('${ex.id}')">${t('reset')}</button>
@@ -1338,6 +1479,8 @@ function renderSuggestedSession() {
             <span class="suggestion-title">${txt.suggested}</span>
             <span class="suggestion-cycle-badge">${cycleLabel}</span>
         </div>
+
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:14px; padding:0 4px;">Se ti senti rigido, inizia con l'<a onclick="goToActivation()" style="color:var(--text-muted); cursor:pointer; text-decoration:underline;">attivazione muscolare</a>.</p>
 
         <div class="suggestion-block">
             <div class="suggestion-block-header">
@@ -1410,8 +1553,13 @@ function markSuggestedDone(id) {
             clearInterval(activeTimers[id].interval);
             activeTimers[id].interval = null;
         }
-        expandedSuggested = null;
         pendingNoteId = id;
+        // Auto-open the next undone exercise
+        const suggested = getSuggestedSession();
+        const allSuggIds = suggested ? [...suggested.warmup, ...suggested.focus] : [];
+        const doneSoFar = new Set([...session.done]);
+        const nextUndone = allSuggIds.find(eid => eid !== id && !doneSoFar.has(eid));
+        expandedSuggested = nextUndone || null;
     }
     saveSession(k, session);
     renderSuggestedSession();
@@ -1421,6 +1569,12 @@ function markSuggestedDone(id) {
             const input = document.getElementById('quick-note-' + pendingNoteId);
             if (input) input.focus();
         }, 60);
+    }
+    if (expandedSuggested) {
+        setTimeout(() => {
+            const el = document.querySelector(`[data-sugg-id="${expandedSuggested}"]`);
+            if (el) el.scrollIntoView({ behavior:'smooth', block:'nearest' });
+        }, 80);
     }
 }
 
@@ -1485,19 +1639,13 @@ function renderSession() {
     const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     document.getElementById('session-date').textContent = `${days[today.getDay()]}, ${months[today.getMonth()]} ${today.getDate()}`;
-    const streak = getStreak();
-    document.getElementById('session-subtitle').textContent = streak>1
-        ? `🔥 ${streak} giorni di fila! Continua così.`
-        : streak===1 ? `✅ Hai praticato oggi.`
-        : `Nessuna pratica di recente. Inizia oggi.`;
-    document.getElementById('stat-done').textContent = done.length;
-    document.getElementById('stat-streak').textContent = streak;
+    const last30 = getLast30Days();
+    const todayDone = done.length > 0;
+    document.getElementById('session-subtitle').textContent = todayDone
+        ? `✅ Sessione di oggi completata`
+        : `Cosa alleniamo oggi?`;
+    document.getElementById('stat-last30').textContent = last30;
     document.getElementById('stat-total').textContent = getTotalSessions();
-    // update stat labels
-    const statLabels = document.querySelectorAll('.stat-label');
-    if (statLabels[0]) statLabels[0].textContent = t('doneToday');
-    if (statLabels[1]) statLabels[1].textContent = t('streak');
-    if (statLabels[2]) statLabels[2].textContent = t('sessions');
     // update section headings
     const h3Today = document.getElementById('h3-today-session');
     if (h3Today) h3Today.textContent = t('todaySession');
@@ -1959,6 +2107,15 @@ function saveCustomTip() {
 //  NAVIGATION
 // ==========================================
 
+function goToActivation() {
+    setFilter('activation');
+    showPage('exercises');
+    setTimeout(() => {
+        const el = document.getElementById('exercise-list');
+        if (el) el.scrollIntoView({ behavior:'smooth', block:'start' });
+    }, 60);
+}
+
 function showPage(name) {
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     document.querySelectorAll('.nav-tab').forEach(tb=>tb.classList.remove('active'));
@@ -2065,7 +2222,7 @@ const T = {
     addMyExercise:'+ Aggiungi il mio esercizio', addMyTip:'+ Aggiungi il mio consiglio',
     howTo:'Come eseguirlo', repsTarget:'Ripetizioni / Obiettivo', tipLabel:'💡 Consiglio', personalNotes:'Note personali',
     startTimer:'▶ Avvia timer', pause:'⏸ Pausa', resume:'▶ Riprendi', reset:'↺ Reset',
-    markDone:'✓ Segna come fatto', unmarkDone:'✗ Rimuovi il segno', addToToday:'+ Aggiungi a oggi', editBtn:'✏️ Modifica',
+    markDone:'✓ Segna come fatto', unmarkDone:'✗ Segna come non fatto', addToToday:'+ Aggiungi a oggi', editBtn:'✏️ Modifica',
     stageOf:'Livello', of:'di', advanceTo:'Passa al Livello', prevStage:'← Precedente', maxStage:'✓ Livello massimo raggiunto!',
     weekGoal:'Obiettivo:', markWeekDone:'✓ Segna il ciclo come completato', unmarkWeek:'↩ Rimuovi il segno',
     quickRef:'Consigli Rapidi di Riferimento', scanTips:'Scorri questi prima o durante la pratica per riallineare rapidamente la tua percezione e tecnica.',
