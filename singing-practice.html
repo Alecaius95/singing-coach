@@ -1313,6 +1313,26 @@ function getSuggestedSession() {
         if (sessions[key] && sessions[key].done) sessions[key].done.forEach(id => veryRecentDone.add(id));
     }
 
+    // ── Foundations block (1 breathing + 1 support) ─────────────
+    const breathingPool = all.filter(e => e.category === 'breathing');
+    const supportPool   = all.filter(e => e.category === 'support');
+
+    function pickOne(pool) {
+        const sorted = [
+            ...pool.filter(e => !veryRecentDone.has(e.id) && !recentDone.has(e.id)),
+            ...pool.filter(e => !veryRecentDone.has(e.id) &&  recentDone.has(e.id)),
+            ...pool.filter(e =>  veryRecentDone.has(e.id)),
+        ];
+        return sorted[0] || null;
+    }
+
+    const foundations = [];
+    let foundationsMins = 0;
+    const breathingPick = pickOne(breathingPool);
+    const supportPick   = pickOne(supportPool);
+    if (breathingPick) { foundations.push(breathingPick.id); foundationsMins += parseDuration(breathingPick.duration); }
+    if (supportPick)   { foundations.push(supportPick.id);   foundationsMins += parseDuration(supportPick.duration); }
+
     // ── Warm-up block (5–7 min) ─────────────────────────────────
     // Context-aware pool of candidates, sorted by recency (least recently done first)
     const cycleCats = currentCycle.exercises
@@ -1371,19 +1391,26 @@ function getSuggestedSession() {
         const dur = parseDuration(ex.duration);
         const isHigh = (ex.difficulty || 1) >= 4;
         if (isHigh && highDiffCount >= 1) continue; // max 1 high-diff per session
-        if (focusMins + dur <= 16) {
+        if (focusMins + dur <= 12) {
             focus.push(id);
             focusMins += dur;
             if (isHigh) highDiffCount++;
         }
-        if (focusMins >= 12) break;
+        if (focusMins >= 10) break;
     }
-    // Restore original cycle order so marking done doesn't move exercises around
-    focus.sort((a, b) => cycleExIds.indexOf(a) - cycleExIds.indexOf(b));
+    // Sort each block by ascending difficulty
+    const sortByDiff = arr => arr.sort((a, b) => {
+        const ea = all.find(e => e.id === a);
+        const eb = all.find(e => e.id === b);
+        return (ea?.difficulty || 1) - (eb?.difficulty || 1);
+    });
+    sortByDiff(foundations);
+    sortByDiff(warmup);
+    sortByDiff(focus);
 
     const songTip = SONG_TIPS_IT[currentCycle.week] || "Applica il focus di oggi a una frase breve di una canzone che stai studiando.";
 
-    return { cycle: currentCycle, warmup, focus, warmupMins, focusMins, songTip, recentDone, todayDone };
+    return { cycle: currentCycle, foundations, foundationsMins, warmup, focus, warmupMins, focusMins, songTip, recentDone, todayDone };
 }
 
 function renderSuggestedSession() {
@@ -1482,13 +1509,15 @@ function renderSuggestedSession() {
         </div>`;
     }
 
-    const allIds = [...s.warmup, ...s.focus];
+    const allIds = [...s.foundations, ...s.warmup, ...s.focus];
     const nextId = allIds.find(id => !s.todayDone.has(id));
+    const foundationRows = s.foundations.map(id => exRow(id, id === nextId)).join('');
     const warmupRows = s.warmup.map(id => exRow(id, id === nextId)).join('');
     const focusRows = s.focus.map(id => exRow(id, id === nextId)).join('');
 
     const txt = {
         suggested: 'Piano di oggi',
+        foundations: 'Respirazione & Appoggio',
         warmup: 'Riscaldamento',
         focus: `Tecnica — ${cycleTitle}`,
         song: 'Applicazione alla canzone',
@@ -1504,6 +1533,15 @@ function renderSuggestedSession() {
         </div>
 
         <p style="font-size:12px; color:var(--text-muted); margin-bottom:14px; padding:0 4px;">Se ti senti rigido, inizia con l'<a onclick="goToActivation()" style="color:var(--text-muted); cursor:pointer; text-decoration:underline;">attivazione muscolare</a>.</p>
+
+        <div class="suggestion-block">
+            <div class="suggestion-block-header">
+                <span class="suggestion-block-icon">💨</span>
+                <span class="suggestion-block-title">${txt.foundations}</span>
+                <span class="suggestion-block-time">~${s.foundationsMins} min</span>
+            </div>
+            ${foundationRows}
+        </div>
 
         <div class="suggestion-block">
             <div class="suggestion-block-header">
@@ -1526,7 +1564,7 @@ function renderSuggestedSession() {
         <div class="suggestion-block">
             <div class="suggestion-block-header">
                 <span class="suggestion-block-icon">🎵</span>
-                <span class="suggestion-block-title">${txt.song} <span style="font-weight:400;color:var(--text-muted);">(${txt.songTime})</span></span>
+                <span class="suggestion-block-title">${txt.song}</span>
             </div>
             <p style="font-size:13px; line-height:1.65; color:var(--text-muted); margin:0; padding:0 4px;">${s.songTip}</p>
         </div>
