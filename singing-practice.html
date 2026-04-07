@@ -612,7 +612,7 @@ const EXERCISES = [
       desc:'Take a deep yawn (feel the back of your throat open completely), then let out a relaxed, breathy sigh from the top of your range down to the bottom.',
       tip:"Don't try to \"sing\" the sigh — just let it fall. The open space in the back of your throat during a yawn? That's what you want when you sing.",
       reps:'6–10 sighs covering your full range', tags:['relaxation','range','throat space'] },
-    { id:'five-tone-me', category:'warmup', name:'Scala a 5 note su "Me"', duration:'4 min', difficulty:2,
+    { id:'five-tone-me', category:'warmup', name:'Scala a 5 note su "Me"', duration:'3 min', difficulty:2,
       desc:'Sing a five-note scale (1-2-3-4-5-4-3-2-1) on the bright syllable "Me". Start in comfortable middle range and move up by half steps, then descend.',
       tip:'"Me" promotes forward placement and engages twang — buzz between your eyes. Keep it light on the way up.',
       reps:'Move through 8–10 keys', tags:['scale','placement','twang'] },
@@ -628,7 +628,7 @@ const EXERCISES = [
       desc:'Fai uno slide continuo su "Mum" (m-ah-m). La "M" iniziale chiude le labbra e focalizza la risonanza; la vocale apre. Sali lentamente fino all\'acuto, scendi al grave. Tutto legato, senza interruzioni.',
       tip:'La "M" finale ti riporta in risonanza di maschera dopo la vocale aperta. Ottimo per collegare registro di petto e di testa in un unico movimento.',
       reps:'6–8 slide su e giù per l\'intera estensione', tags:['sovt','riscaldamento','mix','legato'] },
-    { id:'wee-slide', category:'warmup', name:'Slide su "Wee"', duration:'3 min', difficulty:2,
+    { id:'wee-slide', category:'warmup', name:'Slide su "Wee"', duration:'2 min', difficulty:2,
       desc:'Fai uno slide verso l\'alto su "Wee" — parti dal grave e sali fino all\'acuto, poi ridiscendi. La vocale "i" aperta porta naturalmente in voce di testa. Mantieni il suono leggero e non forzato.',
       tip:'"Wee" accede all\'acuto in modo morbido grazie alla vocale frontale. Se senti un clic o uno stacco brusco salendo, rallenta e riduci il volume finché lo slide non diventa fluido.',
       reps:'6–8 slide completi', tags:['riscaldamento','acuti','testa','legato'] },
@@ -638,11 +638,11 @@ const EXERCISES = [
       desc:'Una mano sul petto, una sulla pancia. Inspira dal naso: solo la mano sulla pancia si alza, il petto resta fermo. Espirazione: lascia uscire l\'aria lentamente e uniformemente, come se stessi soffiando su una candela senza spegnerla. La pancia scende piano, senza collassare di colpo.',
       tip:'È il fondamento assoluto. Se non riesci a isolare la respirazione addominale da sdraiato, non riuscirai a farlo cantando. Allenala ogni giorno finché non diventa automatica.',
       reps:'10–15 respiri lenti e consapevoli', tags:['fondamenta','diaframma','principiante'] },
-    { id:'costal-breath', category:'breathing', name:'Respirazione costo-diaframmatica', duration:'5 min', difficulty:2,
+    { id:'costal-breath', category:'breathing', name:'Respirazione costo-diaframmatica', duration:'4 min', difficulty:2,
       desc:'Metti le mani sui fianchi con i pollici verso la schiena e le dita verso l\'avanti, come se abbracciassi le costole inferiori. Inspira espandendo in tutte le direzioni: pancia in avanti, costole lateralmente, schiena leggermente indietro verso i pollici. Espirazione: mantieni la sensazione di espansione il più a lungo possibile — non cedere subito — e lascia uscire l\'aria lentamente su una "s" o una "f". Quella resistenza all\'abbassamento delle costole è la base dell\'appoggio.',
       tip:'La differenza fondamentale rispetto alla sola diaframmatica è che le costole si espandono lateralmente, creando una "camera" più ampia e stabile. Nel canto l\'espirazione è lenta e controllata: non svuotarti, gestisci l\'aria.',
       reps:'10–12 respiri, concentrandoti sulla tenuta costale durante l\'espirazione', tags:['diaframma','costole','appoggio','respiro'] },
-    { id:'box-breathing', category:'breathing', name:'Respirazione quadrata', duration:'5 min', difficulty:3,
+    { id:'box-breathing', category:'breathing', name:'Respirazione quadrata', duration:'4 min', difficulty:3,
       desc:'Breathe in a box pattern: inhale — hold — exhale — hold. Each phase is timed. This builds breath control, lung capacity, and the ability to manage air on long phrases.',
       tip:'The magic is in the progressive nature: as you get better, the exhale gets longer while the inhale stays the same. This mirrors what happens in singing — short in, long out. Don\'t push the times; advance a stage only when the current one feels completely comfortable.',
       reps:'6–8 cycles per session',
@@ -681,7 +681,7 @@ const EXERCISES = [
       reps:'5 minutes continuous — scales, slides, hums', tags:['sovt','efficiency','balance'] },
 
     // SUPPORT & APPOGGIO
-    { id:'appoggio-sensation', category:'support', name:'Trovare l\'appoggio', duration:'5 min', difficulty:3,
+    { id:'appoggio-sensation', category:'support', name:'Trovare l\'appoggio', duration:'2 min', difficulty:3,
       desc:'Inhale deeply — belly and ribs expand. As you exhale on an "s", actively resist the collapse: maintain that expanded feeling. The resistance IS appoggio.',
       tip:"Don't push in or out. Maintain the inhalation posture as you sing. The old Italian school: \"singing on a column of air.\" Think: STAY OPEN.",
       reps:'8–10 times — focus on the sensation', tags:['appoggio','support','posture'] },
@@ -769,7 +769,7 @@ const EXERCISES = [
       reps:'6–8 note su altezze diverse', tags:['falsetto','dinamica','controllo','chiusura'] },
 
     // MIXED VOICE
-    { id:'siren', category:'mixed', name:'Sirena a piena estensione', duration:'4 min', difficulty:2,
+    { id:'siren', category:'warmup', name:'Sirena a piena estensione', duration:'4 min', difficulty:2,
       desc:'Smoothly glide from bottom to top of your range and back — like a fire truck siren. Use "ee" or "oo". Try not to flip.',
       tip:'Your primary diagnostic tool. Listen each session: same flip point? Same airy section? Don\'t force — just observe. Over time the siren smooths out.',
       reps:'6–8 full-range slides', tags:['mixed','passaggio','range','diagnostic'] },
@@ -1047,19 +1047,19 @@ function updateTimerDisplay(id) {
 //  All other values are search queries (youtube.com/results?search_query=...)
 // ==========================================
 const YOUTUBE_LINKS = {
-    'lip-trill':        'lip trill lip roll singing SOVT exercise tutorial vocal coach',
+    'lip-trill':        'v:vQG8qLThVMw',
     'tongue-trill':     'v:2yI8nZOM0m4',
     'yawn-sigh':        'yawn sigh vocal exercise singing tutorial',
-    'five-tone-me':     'five tone scale singing exercise twang placement tutorial',
+    'five-tone-me':     'v:RTokGPc34wo',
     'octave-repeat':    'nay octave repeat singing exercise twang vocal coach',
     'belly-breath':     'diaphragmatic belly breathing singing tutorial vocal coach',
-    'box-breathing':    'box breathing singers breath control 4 4 4 4 tutorial',
+    'box-breathing':    'v:bJyUrEhu26U',
     'hissing':          'hissing breath control singing exercise sustained hiss',
     'panting':          'panting diaphragm exercise singers diaframma',
     'breath-suspension':'breath suspension appoggio posture singing exercise tutorial',
     'straw-phonation':  'v:0xYDvwvmBIM', // Dr. Ingo Titze — NCVS, verified
     'appoggio-sensation':'appoggio breath support sensation singing exercise tutorial',
-    'staccato-support': 'staccato support singing exercise breath impulse tutorial',
+    'staccato-support': 'v:tPgBnOZPmCo',
     'messa-di-voce':    'messa di voce singing exercise swell tutorial vocal coach',
     'rib-expansion':    'lateral rib expansion breathing singing support exercise',
     'chest-call':       'belting singing technique supported call exercise vocal coach',
@@ -1072,7 +1072,7 @@ const YOUTUBE_LINKS = {
     'falsetto-to-chest':'chest voice falsetto switch deliberate register exercise',
     'siren':            'siren vocal exercise full range glide tutorial',
     'cry-exercise':     'cry voice singing exercise passaggio blend tutorial',
-    'nay-scale':        'nay scale mixed voice passaggio singing exercise tutorial',
+    'nay-scale':        'v:s1aN8BCuKpY',
     'gee-octave':       'gee octave jump singing exercise mixed voice passaggio',
     'humming':          'humming vocal exercise singing resonance forward placement',
     'ee-vowel':         'ee vowel forward resonance singing exercise placement tutorial',
@@ -1373,19 +1373,20 @@ function getSuggestedSession() {
     // ── Focus block (12–16 min) ──────────────────────────────────
     const cycleExIds = currentCycle.exercises.filter(id => !warmup.includes(id));
 
-    // Priority: fresh (not done in 14d) → done in 14d but not 3d → done in 3d → done today
-    const sorted = [
+    // Priority for undone: fresh (not done in 14d) → done in 14d but not 3d → done in 3d
+    const undoneSorted = [
         ...cycleExIds.filter(id => !recentDone.has(id) && !todayDone.has(id)),
         ...cycleExIds.filter(id => recentDone.has(id) && !veryRecentDone.has(id) && !todayDone.has(id)),
         ...cycleExIds.filter(id => veryRecentDone.has(id) && !todayDone.has(id)),
-        ...cycleExIds.filter(id => todayDone.has(id)),
     ];
+    const doneTodayIds = cycleExIds.filter(id => todayDone.has(id));
 
     // Difficulty balancing: avoid stacking more than one level-4/5 exercise
     let focusMins = 0;
     let highDiffCount = 0;
     const focus = [];
-    for (const id of sorted) {
+    // Fill with undone exercises up to the time limit
+    for (const id of undoneSorted) {
         const ex = all.find(e => e.id === id);
         if (!ex) continue;
         const dur = parseDuration(ex.duration);
@@ -1398,15 +1399,14 @@ function getSuggestedSession() {
         }
         if (focusMins >= 10) break;
     }
-    // Sort each block by ascending difficulty
-    const sortByDiff = arr => arr.sort((a, b) => {
-        const ea = all.find(e => e.id === a);
-        const eb = all.find(e => e.id === b);
-        return (ea?.difficulty || 1) - (eb?.difficulty || 1);
-    });
-    sortByDiff(foundations);
-    sortByDiff(warmup);
-    sortByDiff(focus);
+    // Always keep done-today exercises visible in the block
+    for (const id of doneTodayIds) {
+        if (!focus.includes(id)) {
+            focus.push(id);
+            const ex = all.find(e => e.id === id);
+            if (ex) focusMins += parseDuration(ex.duration);
+        }
+    }
 
     const songTip = SONG_TIPS_IT[currentCycle.week] || "Applica il focus di oggi a una frase breve di una canzone che stai studiando.";
 
@@ -1701,7 +1701,10 @@ function renderSession() {
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     document.getElementById('session-date').textContent = `${days[today.getDay()]}, ${months[today.getMonth()]} ${today.getDate()}`;
     const last30 = getLast30Days();
-    const todayDone = done.length > 0;
+    const suggestedSession = getSuggestedSession();
+    const suggestedIds = suggestedSession ? [...suggestedSession.foundations, ...suggestedSession.warmup, ...suggestedSession.focus] : [];
+    const doneset = new Set(done);
+    const todayDone = suggestedIds.length > 0 && suggestedIds.every(id => doneset.has(id));
     document.getElementById('session-subtitle').textContent = todayDone
         ? `✅ Sessione di oggi completata`
         : `Cosa alleniamo oggi?`;
